@@ -40,6 +40,8 @@ CompassAI/
 ├── CompassAIFrontend/   # 프론트엔드 (Vite + React)
 ├── CompassAIBackend/    # 백엔드 (Spring Boot)
 ├── .gitignore
+├── package.json
 └── README.md
+
 ```
 
