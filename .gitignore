@@ -1,0 +1,109 @@
+# =========================
+# 🧩 OS 공통
+# =========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+Icon?
+__MACOSX/
+$RECYCLE.BIN/
+
+# =========================
+# 🧰 IDE / 편집기
+# =========================
+# IntelliJ / JetBrains
+.idea/
+*.iml
+*.iws
+out/
+!.run/            # 실행 설정은 선택적으로 커밋 가능 시 제외 주석 처리
+
+# VSCode / Cursor
+.vscode/
+.history/
+*.code-workspace
+
+# =========================
+# 🪄 Node / Frontend (Vite, React, Next.js)
+# =========================
+node_modules/
+dist/
+build/
+.cache/
+.next/
+out/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+vite.config.timestamp-*
+.DS_Store
+
+# 환경변수 / 설정파일
+.env
+.env.*.local
+!.env.example
+
+# =========================
+# ☕ Gradle / Java / Spring Boot
+# =========================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
+
+# IDE 캐시 및 빌드산출물
+bin/
+logs/
+*.class
+*.jar
+*.war
+*.ear
+*.db
+*.h2.db
+*.log
+
+# =========================
+# 🧪 테스트 / 리포트
+# =========================
+test-output/
+target/
+jacoco.exec
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+
+# =========================
+# 🖼️ 환경별 정적파일
+# =========================
+tmp/
+uploads/
+public/uploads/
+*.local
+*.temp
+
+# =========================
+# 🧩 OS / 툴 보정
+# =========================
+# Windows 특화
+*.lnk
+
+# macOS 특화
+.AppleDouble
+.LSOverride
+
+# =========================
+# ✅ 예외 커밋 허용
+# =========================
+!.gitignore
+!.env.example
+!README.md
+!LICENSE

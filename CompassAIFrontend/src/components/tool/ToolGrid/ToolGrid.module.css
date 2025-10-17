@@ -1,0 +1,49 @@
+/* ================= 카드 섹션 전체 ================= */
+.section {
+    /* 4열 총폭 = (카드 폭 × 4) + (갭 × 3) */
+    max-width: calc(var(--tool-card-w) * 4 + var(--tool-card-gap) * 3);
+    margin: 24px auto;
+    padding: 0 16px;
+    box-sizing: content-box; /* padding이 max-width 계산에 포함되지 않도록 */
+
+    /* 팝오버가 영역 밖으로 나와도 잘리지 않게 */
+    overflow: visible;
+}
+
+/* ================= 카드 그리드 ================= */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, var(--tool-card-w)); /* 카드 4열 고정 */
+    gap: var(--tool-card-gap);
+    justify-content: center;   /* 전체를 가운데 정렬 */
+    overflow: visible;         /* 팝오버 잘림 방지 */
+    position: relative;        /* 스택 컨텍스트 기준 확보 (z-index 계산 안정화) */
+}
+
+/* ================= 반응형 (줄 수만 조정) ================= */
+@media (max-width: 1200px) {
+    .section {
+        max-width: calc(var(--tool-card-w) * 3 + var(--tool-card-gap) * 2);
+    }
+    .grid {
+        grid-template-columns: repeat(3, var(--tool-card-w)); /* 3열 */
+    }
+}
+
+@media (max-width: 860px) {
+    .section {
+        max-width: calc(var(--tool-card-w) * 2 + var(--tool-card-gap) * 1);
+    }
+    .grid {
+        grid-template-columns: repeat(2, var(--tool-card-w)); /* 2열 */
+    }
+}
+
+@media (max-width: 520px) {
+    .section {
+        max-width: var(--tool-card-w);
+    }
+    .grid {
+        grid-template-columns: var(--tool-card-w); /* 1열 */
+    }
+}

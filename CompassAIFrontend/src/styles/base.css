@@ -1,0 +1,15 @@
+/* ===== Global Base ===== */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo";
+    color: #111;
+}
+
+/* 중앙 정렬 컨테이너 (공통 레이아웃용) */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px;
+}

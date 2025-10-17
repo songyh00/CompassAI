@@ -1,0 +1,270 @@
+/* ===============================
+   고객센터 (HelpCenter.module.css)
+   =============================== */
+
+/* ───────── 레이아웃 ───────── */
+.wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+}
+.head {
+    text-align: center;
+    margin-bottom: 18px;
+}
+.title {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #111;
+}
+.sub {
+    margin: 0 0 14px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* ───────── 검색 영역 ───────── */
+.search {
+    display: flex;
+    justify-content: center;
+}
+.search input {
+    width: min(720px, 92vw);
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    background: #fff;
+}
+.search input:focus {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ───────── 탭 버튼 ───────── */
+.tabs {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+.tabs button {
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+/* 일반 탭 hover 시 밝게 */
+.tabs button:hover {
+    background: #f8f9fb;
+}
+/* 활성 탭: 검정 배경 */
+.tabs button.active {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+.tabs button.active:hover {
+    background: #fff;
+    color: #111;
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.section {
+    margin-top: 18px;
+}
+
+/* ───────── FAQ 카테고리 칩 ───────── */
+.cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+.cat {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    color: #111;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+/* 기본 칩 hover 효과 */
+.cat:hover {
+    background: #f8f9fb;
+}
+/* 선택된 칩 (검정 배경) */
+.catActive {
+    background: #111;
+    color: #fff;
+    border-color: #111;
+}
+.catActive:hover {
+    background: #fff;
+    color: #111;
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ───────── FAQ 리스트 ───────── */
+.faq {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    display: grid;
+    gap: 8px;
+}
+.item {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+}
+.q {
+    width: 100%;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-weight: 700;
+    color: #111;
+    border-radius: 12px;
+    transition: background 0.15s ease;
+}
+/* 질문 hover 시 */
+.q:hover {
+    background: #f8f9fb;
+}
+.q i {
+    font-style: normal;
+    color: #888;
+    padding-left: 12px;
+}
+.a {
+    padding: 0 14px 14px;
+    color: #444;
+    line-height: 1.6;
+}
+
+/* ───────── 추가 안내 카드 ───────── */
+.extra {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    background: #fff;
+}
+.card h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* ───────── 문의하기 폼 ───────── */
+.form {
+    max-width: 720px;
+    margin: 0 auto;
+    display: grid;
+    gap: 12px;
+}
+.field {
+    display: grid;
+    gap: 6px;
+}
+.field > span {
+    font-weight: 700;
+    font-size: 14px;
+}
+.field input,
+.field select,
+.field textarea {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 15px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+.invalid {
+    border-color: #ef4444;
+}
+.error {
+    color: #dc2626;
+    font-size: 12px;
+}
+
+/* ───────── 전송 버튼 및 하단 문구 ───────── */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+.submit {
+    height: 42px;
+    padding: 0 16px;
+    border: 1px solid #111;
+    border-radius: 10px;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 800;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.02s ease;
+}
+.submit:hover {
+    background: #fff;
+    color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+.submit:active {
+    transform: translateY(1px);
+}
+.fyi {
+    color: #666;
+    font-size: 12px;
+}
+
+/* ───────── 안내 배너 (폼 전송 완료) ───────── */
+.notice {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #065f46;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+/* ───────── 반응형 (모바일) ───────── */
+@media (max-width: 720px) {
+    .extra {
+        grid-template-columns: 1fr;
+    }
+}

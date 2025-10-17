@@ -1,0 +1,34 @@
+/* ===== Global ===== */
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", sans-serif;
+    color: #111;
+}
+
+/* 메인 컨테이너 */
+.container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 16px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* 전체 레이아웃 */
+.app {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 헤더 제외 영역 (메인 콘텐츠) */
+.main {
+    flex: 1;
+    display: flex; /* .container가 세로로 늘어남 */
+}

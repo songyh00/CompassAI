@@ -1,0 +1,74 @@
+# ===============================
+# 📦 Node / Vite / React 기본
+# ===============================
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ===============================
+# ⚙️ 환경 설정 / 환경변수
+# ===============================
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# ===============================
+# 💻 IDE / OS별 설정 (Mac + Windows)
+# ===============================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===============================
+# 🧠 IDE (VSCode / IntelliJ)
+# ===============================
+
+# VSCode
+.vscode/
+.history/
+*.code-workspace
+
+# IntelliJ / JetBrains
+.idea/
+*.iml
+out/
+target/
+
+# ===============================
+# 🧪 Test / Coverage
+# ===============================
+coverage/
+.vitest/
+
+# ===============================
+# ⚡ Temporary / Misc
+# ===============================
+temp/
+tmp/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# ===============================
+# 📸 Optional: 프로젝트 문서/기타
+# ===============================
+*.pptx
+*.pdf
+*.docx
+*.xlsx

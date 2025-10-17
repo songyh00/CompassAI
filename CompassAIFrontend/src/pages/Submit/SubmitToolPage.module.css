@@ -1,0 +1,86 @@
+/* ===============================
+   SubmitToolPage.module.css (정리본)
+   - 로그인/회원가입 카드 톤과 통일
+   - 불필요한 전역 토큰/배경/높이 제거
+   =============================== */
+
+/* 레이아웃: App 레이아웃이 높이/배경을 관리하므로 여기선 여백만 */
+.submit-wrap { padding: 40px 16px; }
+.submit-container { max-width: 720px; margin: 0 auto; }
+
+/* 헤더 */
+.submit-header { text-align: center; margin-bottom: 16px; }
+.submit-title {
+    margin: 0 0 6px; color: #111; font-size: 28px; font-weight: 800; letter-spacing: -.02em;
+}
+.submit-sub { margin: 0 0 20px; color: #6b7280; font-size: 14px; }
+
+/* 카드: 로그인/회원가입과 동일 톤 */
+.submit-card{
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.04);
+    margin-bottom: 16px;
+}
+
+/* 폼 그리드: 데스크탑 2열, 모바일 1열 */
+.submit-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 18px; }
+@media (max-width: 780px){ .submit-grid{ grid-template-columns: 1fr; } }
+.field.full{ grid-column: 1 / -1; }
+
+/* 라벨/인풋 (로그인/회원가입과 동일 포커스 룩) */
+.label{ display: block; color: #111; font-size: 14px; margin-bottom: 6px; font-weight: 700; }
+.req{ color: #ef4444; }
+
+.input{
+    width: 100%; background: #fff;
+    border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 12px 14px; font-size: 14px; line-height: 1.2; outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input:focus{ border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+.textarea{ resize: vertical; }
+
+/* 안내/오류 */
+.hint{ color: #9ca3af; font-size: 12px; margin-top: 6px; }
+.error{ color: #dc2626; font-size: 12px; margin-top: 6px; }
+.ok{ color: #22c55e; font-size: 13px; margin-top: 12px; }
+
+/* 체크박스 그룹 */
+.checks{ display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.check-item{ display: flex; align-items: center; gap: 8px; color: #374151; font-size: 14px; }
+.check-item input[type="checkbox"]{ width: 16px; height: 16px; }
+
+/* 칩(주요 특징 미리보기) */
+.chips{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip{
+    background: #f8f9fb; border: 1px solid #e5e7eb;
+    color: #374151; padding: 6px 10px; border-radius: 999px; font-size: 12px;
+}
+
+/* 액션: 그리드 전체 폭 + 중앙 정렬 */
+.submit-grid .actions { grid-column: 1 / -1; }
+.actions { display: flex; justify-content: center; gap: 12px; margin-top: 12px; }
+
+/* 버튼 (로그인/회원가입 .submit 과 동일한 흰/검 전환) */
+.btn{
+    border: 1px solid #111; background: #111; color: #fff;
+    padding: 12px 14px; border-radius: 10px; font-size: 14px;
+    cursor: pointer; transition: background .15s ease, color .15s ease, box-shadow .15s ease, transform .02s ease;
+}
+.btn:hover:not(:disabled){ background: #fff; color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
+.btn:active{ transform: translateY(1px); }
+.btn:disabled{ opacity: .6; cursor: not-allowed; }
+
+/* 고스트 버튼: 외곽선+흰 배경 */
+.btn-ghost{ border: 1px solid #e5e7eb; background: #fff; color: #111; }
+.btn-ghost:active{ transform: translateY(1px); }
+
+/* 미리보기 박스 */
+.preview-title{ color: #111; margin: 0 0 10px; font-size: 16px; font-weight: 700; }
+.preview-pre{
+    background: #fafafa; border: 1px solid #e5e7eb; color: #374151;
+    border-radius: 12px; padding: 12px; overflow-x: auto; font-size: 12px;
+}

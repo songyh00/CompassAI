@@ -1,0 +1,9 @@
+/* ===== 푸터 전체 영역 ===== */
+.footer {
+    border-top: 1px solid #eee;   /* 위쪽 경계선 */
+    background: #fafafa;          /* 밝은 회색 배경 */
+    padding: 24px 0;              /* 위아래 여백 */
+    text-align: center;           /* 가운데 정렬 */
+    font-size: 13px;              /* 기본 글자 크기 */
+    color: #666;                  /* 글자색 */
+}

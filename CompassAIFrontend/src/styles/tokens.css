@@ -1,0 +1,41 @@
+/* ===== Header / Card Design Tokens ===== */
+:root {
+    /* 헤더 */
+    --header-h: 100px;
+    --header-pad-x: 28px;
+
+    /* 브랜드(좌측) */
+    --brand-logo-h: 70px;
+    --brand-font: 30px;
+    --brand-nudge-y: 0px;
+
+    /* 오른쪽 링크 */
+    --links-font: 13px;
+    --links-gap: 10px;
+    --links-nudge-y: 20px;
+    --links-color: #666;
+    --links-hover: #111;
+
+    /* 검색 placeholder 이동 */
+    --search-shift-x: 0px;
+
+    /* Tool Card */
+    --tool-card-radius: 16px;
+    --tool-card-pad: 16px;
+    --tool-card-gap: 16px;
+    --tool-grid-max: 1350px;
+    --tool-card-w: 320px;
+    --tool-card-h: 150px;
+}
+
+/* 반응형: 모바일 토큰 */
+@media (max-width: 640px) {
+    :root {
+        --header-h: 56px;
+        --header-pad-x: 18px;
+        --brand-logo-h: 32px;
+        --brand-font: 22px;
+        --links-font: 12px;
+        --links-gap: 8px;
+    }
+}

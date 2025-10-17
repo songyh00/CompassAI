@@ -1,0 +1,62 @@
+/* ===== 카테고리 바 전체 컨테이너 ===== */
+.catbar {
+    position: relative;
+    display: flex;
+    justify-content: center;    /* 중앙 정렬 */
+    align-items: center;
+    gap: 8px;                   /* 버튼 간격 */
+    padding: 0 4px;
+}
+
+/* ===== 내부 버튼 그룹(가로 정렬) ===== */
+.track {
+    display: flex;
+    flex-wrap: wrap;            /* 여러 줄로 자동 줄바꿈 */
+    justify-content: center;
+    gap: 8px;                   /* 버튼 간 간격 */
+    padding: 8px 0;
+}
+
+/* ===== 개별 카테고리 버튼 ===== */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;        /* pill 형태 */
+    background: #fff;
+    color: #111;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: all .15s ease;  /* hover 시 부드러운 변화 */
+}
+
+/* 마우스 오버 시 배경색 변경 */
+.chip:hover {
+    background: #f8f9fb;
+}
+
+/* ===== 활성 상태(선택된 카테고리) ===== */
+.chip.active {
+    background: #111;           /* 검정 배경 */
+    color: #fff;                /* 흰색 글씨 */
+    border-color: #111;
+}
+
+/* 활성 상태 + hover 시 반전 효과 */
+.chip.active:hover {
+    background: #fff;
+    color: #111;
+    border-color: #111;
+}
+
+/* ===== 반응형 (모바일) ===== */
+@media (max-width: 640px) {
+    .chip {
+        height: 32px;
+        font-size: 13px;
+        padding: 0 12px;
+    }
+}
