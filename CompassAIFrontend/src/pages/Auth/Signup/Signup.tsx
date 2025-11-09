@@ -73,7 +73,7 @@ export default function Signup() {
                     <span className={s.label}>이름</span>
                     <input
                         className={`${s.input} ${err.name ? s.invalid : ""}`}
-                        placeholder="홍길동"
+                        placeholder="test"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />

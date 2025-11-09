@@ -1,53 +1,72 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import s from "./Header.module.css";
+import { me, logout } from "@/api/client";
+import type { Me } from "@/api/client";
 
 export default function Header() {
-    /**
-     * 홈 로고 클릭 시 전체 새로고침 (SPA 이동이 아닌 완전한 리로드)
-     * - 브라우저 캐시/상태를 초기화하기 위해 사용
-     */
+    const [user, setUser] = useState<Me>(null);
+    const navigate = useNavigate();
+
+    // 최초 로드 시 현재 세션 사용자 조회
+    useEffect(() => {
+        me().then(setUser).catch(() => setUser(null));
+    }, []);
+
+    // ✅ 로그인/로그아웃 시점에 헤더 갱신
+    useEffect(() => {
+        const handle = () => me().then(setUser).catch(() => setUser(null));
+        window.addEventListener("auth:changed", handle);
+        return () => window.removeEventListener("auth:changed", handle);
+    }, []);
+
     const goHome = (e: React.MouseEvent) => {
         e.preventDefault();
         window.location.href = "/";
     };
 
+    const onLogout = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        try {
+            await logout();
+            setUser(null);
+            navigate("/");
+        } catch {
+            // 필요 시 토스트 처리
+        }
+    };
+
     return (
         <header className={s.header}>
             <div className={s.inner}>
-                {/* =======================
-                    좌측 영역: 브랜드 로고 & 이름
-                   ======================= */}
-                <a
-                    href="/"
-                    className={s.brand}
-                    aria-label="CompassAI Home"
-                    onClick={goHome}
-                >
-                    {/* 브랜드 로고 이미지 */}
-                    <img
-                        className={s.logo}
-                        src="/logo.png"
-                        alt="CompassAI 로고"
-                    />
-
-                    {/* 브랜드 텍스트 (사이트명) */}
+                <a href="/" className={s.brand} aria-label="CompassAI Home" onClick={goHome}>
+                    <img className={s.logo} src="/logo.png" alt="CompassAI 로고" />
                     <span className={s.text}>CompassAI</span>
                 </a>
 
-                {/* =======================
-                    우측 영역: 상단 메뉴 링크 모음
-                    (로그인, 회원가입, AI 등록, 고객센터)
-                   ======================= */}
                 <nav className={s.links} aria-label="유틸리티 메뉴">
-                    <a href="/login">로그인</a>
-                    <span className={s.divider} aria-hidden="true">|</span>
-
-                    <a href="/signup">회원가입</a>
-                    <span className={s.divider} aria-hidden="true">|</span>
-
-                    <a href="/submit">AI 등록</a>
-                    <span className={s.divider} aria-hidden="true">|</span>
-
-                    <a href="/help">고객센터</a>
+                    {!user ? (
+                        <>
+                            <Link to="/login">로그인</Link>
+                            <span className={s.divider} aria-hidden="true">|</span>
+                            <Link to="/signup">회원가입</Link>
+                            <span className={s.divider} aria-hidden="true">|</span>
+                            <Link to="/help">고객센터</Link>
+                        </>
+                    ) : (
+                        <>
+                            <div className={s.menuGroup}>
+                                <span className={s.hello}>{user.name}님</span>
+                                {/* 드롭다운 추가 예정 영역 */}
+                            </div>
+                            <span className={s.divider} aria-hidden="true">|</span>
+                            <Link to="/submit">AI 등록</Link>
+                            <span className={s.divider} aria-hidden="true">|</span>
+                            <a href="/logout" onClick={onLogout}>로그아웃</a>
+                            <span className={s.divider} aria-hidden="true">|</span>
+                            <Link to="/help">고객센터</Link>
+                        </>
+                    )}
                 </nav>
             </div>
         </header>

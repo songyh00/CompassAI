@@ -6,11 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Schema(description = "회원가입 요청 DTO")
-public class UserSignupRequest {
-
-    @Schema(description = "사용자 이름", example = "test")
-    private String name;
+@Schema(description = "로그인 요청 DTO")
+public class UserLoginRequest {
 
     @Schema(description = "이메일 주소", example = "test@test.com")
     private String email;
