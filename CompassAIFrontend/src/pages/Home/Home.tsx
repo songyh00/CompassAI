@@ -1,14 +1,15 @@
-import { useMemo, useState } from "react";
+// CompassAIFrontend/src/pages/home/Home.tsx
+import { useEffect, useMemo, useState } from "react";
 import CategoryBar from "../../components/tool/CategoryBar/CategoryBar";
 import SearchBar from "../../components/tool/SearchBar/SearchBar";
 import ToolGrid from "../../components/tool/ToolGrid/ToolGrid";
 import type { Category } from "../../types/category";
-import { TOOLS } from "../../data/tools";
 import type { Tool } from "../../types/tool";
+import { getTools } from "../../api/tools"; // ★ 서버에서 목록 가져오기
 
 /** UI에 보여줄 카테고리 목록 */
 const CATEGORIES: Category[] = [
-    { id: "write",         label: "글쓰기/콘텐츠" },   // 표준 라벨(콘텐츠)
+    { id: "write",         label: "글쓰기/콘텐츠" },
     { id: "design",        label: "디자인/아트" },
     { id: "video",         label: "비디오/오디오" },
     { id: "productivity",  label: "생산성/협업도구" },
@@ -19,12 +20,11 @@ const CATEGORIES: Category[] = [
     { id: "ent",           label: "엔터테인먼트/기타" },
     { id: "game",          label: "게임" },
     { id: "life",          label: "일상생활형 서비스" },
-
 ];
 
 /** 데이터상 카테고리 표기가 섞여 있을 수 있어 매핑(동의어) 정의 */
 const CAT_LABELS: Record<string, string[]> = {
-    write: ["글쓰기/콘텐츠", "글쓰기/컨텐츠"], // 두 표기를 모두 허용
+    write: ["글쓰기/콘텐츠", "글쓰기/컨텐츠"],
     design: ["디자인/아트"],
     video: ["비디오/오디오"],
     productivity: ["생산성/협업도구"],
@@ -34,48 +34,52 @@ const CAT_LABELS: Record<string, string[]> = {
     search: ["검색/데이터"],
     ent: ["엔터테인먼트/기타"],
     game: ["게임"],
-    life: ["일상생활형 서비스"]
+    life: ["일상생활형 서비스"],
 };
 
 export default function Home() {
-    const [active, setActive] = useState<string | null>(null); // null = 전체
-    const [query, setQuery] = useState("");
+    const [active, setActive]   = useState<string | null>(null); // 선택 카테고리(UI id)
+    const [query, setQuery]     = useState("");                  // 검색어
+    const [items, setItems]     = useState<Tool[]>([]);          // 서버 결과
+    const [loading, setLoading] = useState(false);
+    const [error, setError]     = useState<string | null>(null);
 
     const handleSearch = (q: string) => setQuery(q);
 
-    /** 단일/다중 카테고리를 모두 지원하는 헬퍼 */
-    const getCategories = (t: Tool): string[] =>
-        Array.isArray(t.categories)
-            ? t.categories
-            : t.category
-                ? [t.category]
-                : [];
+    // 서버에 보낼 실제 카테고리 라벨 (UI id → 첫 번째 라벨)
+    const serverCategory = useMemo(() => {
+        if (!active) return null;
+        const arr = CAT_LABELS[active] ?? [];
+        return arr[0] ?? null;
+    }, [active]);
 
-    /** 카테고리/검색 필터링 */
-    const filtered: Tool[] = useMemo(() => {
-        let list = TOOLS;
-
-        // 카테고리 필터 (여러 카테고리 지원)
-        if (active) {
-            const targets = CAT_LABELS[active] ?? [];
-            list = list.filter((t) => {
-                const cats = getCategories(t);
-                return cats.some((c) => targets.includes(c));
-            });
-        }
-
-        // 검색어 필터 (이름, 서브타이틀)
-        const q = query.trim().toLowerCase();
-        if (q) {
-            list = list.filter(
-                (t) =>
-                    t.name.toLowerCase().includes(q) ||
-                    (t.subTitle ?? "").toLowerCase().includes(q)
-            );
-        }
-
-        return list;
-    }, [active, query]);
+    useEffect(() => {
+        let dead = false;
+        (async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const page = await getTools({
+                    category: serverCategory,
+                    q: query.trim() || null,
+                    page: 0,
+                    size: 60,
+                });
+                if (!dead) setItems(page.content);
+            } catch (err) {
+                if (!dead) {
+                    const message =
+                        err instanceof Error ? err.message : String(err);
+                    setError(message);
+                }
+            } finally {
+                if (!dead) setLoading(false);
+            }
+        })();
+        return () => {
+            dead = true;
+        };
+    }, [serverCategory, query]);
 
     return (
         <section className="home" style={{ textAlign: "center", padding: "32px 0" }}>
@@ -89,8 +93,15 @@ export default function Home() {
                 <CategoryBar items={CATEGORIES} activeId={active} onChange={setActive} />
             </div>
 
-            {/* ✅ 검색 결과 조건 처리 (한 번만 출력되게) */}
-            {filtered.length === 0 ? (
+            {loading && (
+                <p style={{ marginTop: 40 }}>불러오는 중…</p>
+            )}
+
+            {error && (
+                <p style={{ marginTop: 40, color: "crimson" }}>오류: {error}</p>
+            )}
+
+            {!loading && !error && (items.length === 0 ? (
                 <p
                     style={{
                         marginTop: "40px",
@@ -100,15 +111,14 @@ export default function Home() {
                     }}
                 >
                     {active
-                        ? `선택한 카테고리에 해당하는 서비스가 없습니다.`
-                        : `해당하는 서비스가 없습니다.`}
+                        ? "선택한 카테고리에 해당하는 서비스가 없습니다."
+                        : "해당하는 서비스가 없습니다."}
                 </p>
             ) : (
                 <div className="tool-section">
-                    <ToolGrid items={filtered} />
+                    <ToolGrid items={items} />
                 </div>
-            )}
+            ))}
         </section>
-
     );
 }
