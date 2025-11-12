@@ -1,84 +1,102 @@
-/* ===== 헤더 전체 영역 ===== */
+/* Header.module.css — 헤더 레이아웃 및 드롭다운 */
 .header {
-    position: relative;             /* 하단 경계선(::after) 기준용 */
-    height: var(--header-h);        /* 헤더 높이 (토큰에서 관리) */
+    position: relative;
+    height: var(--header-h);
     display: flex;
-    background: #fff;               /* 흰색 배경 */
+    background: #fff;
 }
 
-/* 하단 경계선 */
 .header::after {
     content: "";
     position: absolute;
     left: 0; right: 0; bottom: 0;
     height: 1px;
     background: #eee;
+    z-index: 0;
 }
 
-/* ===== 내부 레이아웃 컨테이너 ===== */
 .inner {
     width: 100%; height: 100%;
     margin: 0 auto;
-    padding: 0 var(--header-pad-x); /* 좌우 여백 (토큰) */
+    padding: 0 var(--header-pad-x);
     display: flex;
     align-items: center;
-    justify-content: flex-start;    /* 좌측 정렬 */
+    justify-content: flex-start;
+    position: relative;
+    z-index: 1;
 }
 
-/* ===== 브랜드(로고 + 텍스트) 영역 ===== */
-.brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-}
+.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.logo  { height: var(--brand-logo-h); width: auto; display: block; object-fit: contain; transform: translateY(var(--brand-nudge-y)); }
+.text  { font-weight: 800; font-size: var(--brand-font); color: #111; letter-spacing: .2px; line-height: 1; transform: translateY(var(--brand-nudge-y)); }
 
-/* 로고 이미지 */
-.logo {
-    height: var(--brand-logo-h);
-    width: auto;
-    display: block;
-    object-fit: contain;
-    transform: translateY(var(--brand-nudge-y)); /* 로고 수직 보정 */
-}
-
-/* 브랜드 텍스트 */
-.text {
-    font-weight: 800;
-    font-size: var(--brand-font);
-    color: #111;
-    letter-spacing: .2px;
-    line-height: 1;
-    transform: translateY(var(--brand-nudge-y)); /* 텍스트 수직 보정 */
-}
-
-/* ===== 우측 링크 영역 ===== */
 .links {
-    margin-left: auto;               /* 오른쪽 끝 정렬 */
+    margin-left: auto;
+    margin-right: 40px;
     display: inline-flex;
     align-items: center;
     gap: var(--links-gap);
     font-size: var(--links-font);
     color: var(--links-color);
-    transform: translateY(var(--links-nudge-y)); /* 수직 보정 */
+    transform: translateY(var(--links-nudge-y));
+}
+.links a { color: inherit; text-decoration: none; padding: 6px 6px; line-height: 1; }
+.links a:hover { color: var(--links-hover); }
+.divider { color: #ddd; user-select: none; padding: 0 2px; }
+
+.menuGroup { position: relative; display: inline-flex; align-items: center; }
+.userButton {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; padding: 6px 6px;
+    font: inherit; color: inherit; cursor: pointer; line-height: 1;
+}
+.userButton:hover { color: var(--links-hover); }
+.hello {}
+.caret { font-size: 10px; transform: translateY(-1px); }
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 160px;
+    background: #fff;               /* 불투명 배경 */
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: none;          /* 흐림 제거 */
 }
 
-/* 각 링크 기본 스타일 */
-.links a {
-    color: inherit;
+.dropdownItem,
+.dropdownItemBtn {
+    width: 100%;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 10px;
+    font-size: 14px;
+    color: #333;
     text-decoration: none;
-    padding: 6px 6px;
-    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.dropdownItem:hover,
+.dropdownItemBtn:hover {
+    background: #f5f5f5;
+    color: #111;
 }
 
-/* 마우스 오버 시 링크 강조 */
-.links a:hover {
-    color: var(--links-hover);
-}
-
-/* 링크 구분용 세로줄( | ) */
-.divider {
-    color: #ddd;
-    user-select: none;
-    padding: 0 2px;
+.separator {
+    width: 100%;
+    height: 1px;
+    background: #eee;
 }

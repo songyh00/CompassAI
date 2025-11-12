@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
+// Header.tsx — 커뮤니티/고객센터/이름 + 드롭다운(마이페이지, AI 등록, 구분선, 로그아웃)
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import s from "./Header.module.css";
 import { me, logout } from "@/api/client";
 import type { Me } from "@/api/client";
 
 export default function Header() {
-    const [user, setUser] = useState<Me>(null);
+    const [user, setUser] = useState<Me | null>(null);
+    const [open, setOpen] = useState(false);
+    const btnRef = useRef<HTMLButtonElement | null>(null);
+    const menuRef = useRef<HTMLDivElement | null>(null);
     const navigate = useNavigate();
 
-    // 최초 로드 시 현재 세션 사용자 조회
+    // 세션 사용자 조회
     useEffect(() => {
         me().then(setUser).catch(() => setUser(null));
     }, []);
 
-    // ✅ 로그인/로그아웃 시점에 헤더 갱신
+    // 인증 상태 변경 시 갱신
     useEffect(() => {
         const handle = () => me().then(setUser).catch(() => setUser(null));
         window.addEventListener("auth:changed", handle);
@@ -25,16 +29,41 @@ export default function Header() {
         window.location.href = "/";
     };
 
-    const onLogout = async (e: React.MouseEvent) => {
-        e.preventDefault();
+    const onLogout = async (e?: React.MouseEvent) => {
+        e?.preventDefault();
         try {
             await logout();
             setUser(null);
             navigate("/");
         } catch {
-            // 필요 시 토스트 처리
+            /* 필요 시 처리 */
         }
     };
+
+    // 외부 클릭 닫기
+    useEffect(() => {
+        if (!open) return;
+        const onDocClick = (e: MouseEvent) => {
+            const t = e.target as Node;
+            if (menuRef.current?.contains(t)) return;
+            if (btnRef.current?.contains(t)) return;
+            setOpen(false);
+        };
+        document.addEventListener("click", onDocClick);
+        return () => document.removeEventListener("click", onDocClick);
+    }, [open]);
+
+    // ESC 닫기
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [open]);
+
+    const toggleMenu = () => setOpen(v => !v);
 
     return (
         <header className={s.header}>
@@ -45,26 +74,76 @@ export default function Header() {
                 </a>
 
                 <nav className={s.links} aria-label="유틸리티 메뉴">
+                    {/* 비로그인: 커뮤니티/고객센터 + 로그인/회원가입 */}
                     {!user ? (
                         <>
+                            <Link to="/community">커뮤니티</Link>
+                            <span className={s.divider} aria-hidden="true">|</span>
+                            <Link to="/help">고객센터</Link>
+                            <span className={s.divider} aria-hidden="true">|</span>
                             <Link to="/login">로그인</Link>
                             <span className={s.divider} aria-hidden="true">|</span>
                             <Link to="/signup">회원가입</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
-                            <Link to="/help">고객센터</Link>
                         </>
                     ) : (
                         <>
-                            <div className={s.menuGroup}>
-                                <span className={s.hello}>{user.name}님</span>
-                                {/* 드롭다운 추가 예정 영역 */}
-                            </div>
-                            <span className={s.divider} aria-hidden="true">|</span>
-                            <Link to="/submit">AI 등록</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
-                            <a href="/logout" onClick={onLogout}>로그아웃</a>
+                            {/* 전역 메뉴 */}
+                            <Link to="/community">커뮤니티</Link>
                             <span className={s.divider} aria-hidden="true">|</span>
                             <Link to="/help">고객센터</Link>
+                            <span className={s.divider} aria-hidden="true">|</span>
+
+                            {/* 이름 드롭다운 */}
+                            <div className={s.menuGroup}>
+                                <button
+                                    ref={btnRef}
+                                    type="button"
+                                    className={s.userButton}
+                                    aria-haspopup="menu"
+                                    aria-expanded={open}
+                                    onClick={toggleMenu}
+                                >
+                                    <span className={s.hello}>{user.name}님</span>
+                                    <span className={s.caret} aria-hidden="true">▾</span>
+                                </button>
+
+                                {open && (
+                                    <div
+                                        ref={menuRef}
+                                        className={s.dropdown}
+                                        role="menu"
+                                        aria-label="사용자 메뉴"
+                                    >
+                                        <Link
+                                            to="/mypage"
+                                            role="menuitem"
+                                            className={s.dropdownItem}
+                                            onClick={() => setOpen(false)}
+                                        >
+                                            마이페이지
+                                        </Link>
+
+                                        <Link
+                                            to="/submit"
+                                            role="menuitem"
+                                            className={s.dropdownItem}
+                                            onClick={() => setOpen(false)}
+                                        >
+                                            AI 등록
+                                        </Link>
+
+                                        <div className={s.separator} role="separator" />
+
+                                        <button
+                                            role="menuitem"
+                                            className={s.dropdownItemBtn}
+                                            onClick={onLogout}
+                                        >
+                                            로그아웃
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </>
                     )}
                 </nav>
