@@ -3,29 +3,34 @@ package com.compassai.backend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
 
+    // 비밀번호 암호화용 빈 등록
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    // 기본 보안 설정
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // ✅ CSRF 비활성화
-                .csrf(csrf -> csrf.disable())
-                // ✅ 요청별 권한 설정
+                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
-                        ).permitAll()   // Swagger + API 전체 허용
-                        .anyRequest().permitAll() // 나머지도 허용
+                        ).permitAll()
+                        .anyRequest().permitAll()
                 )
-                // ✅ 폼 로그인 완전 비활성화 (이걸 안 하면 /login redirect 발생)
-                .formLogin(form -> form.disable())
-                // ✅ HTTP Basic 비활성화
-                .httpBasic(basic -> basic.disable());
+                .formLogin(form -> form.disable()) // 폼 로그인 비활성화
+                .httpBasic(basic -> basic.disable()); // HTTP Basic 비활성화
 
         return http.build();
     }
