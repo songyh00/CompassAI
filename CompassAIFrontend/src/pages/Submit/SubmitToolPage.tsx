@@ -1,13 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useRef, useState } from "react";
 import s from "./SubmitToolPage.module.css";
 
-/* ================================
-   상수 정의
-   ================================ */
-
-/** 서비스 카테고리 목록 */
+/* 선택 항목 */
 const CATEGORIES = [
-    "글쓰기/컨텐츠",
+    "글쓰기/콘텐츠",
     "디자인/아트",
     "비디오/오디오",
     "생산성/협업도구",
@@ -19,115 +15,83 @@ const CATEGORIES = [
     "게임",
     "일상생활형 서비스",
 ] as const;
-type Category = typeof CATEGORIES[number];
+type Category = (typeof CATEGORIES)[number];
 
-/** 지원 플랫폼 목록 */
-const PLATFORM_OPTIONS = [
-    "웹(Web)",
-    "iOS",
-    "Android",
-    "Windows",
-    "macOS",
-    "Linux",
-    "브라우저 확장(Extension)",
-    "API/SDK",
-] as const;
+const ORIGINS = ["국내", "해외"] as const;
+type Origin = (typeof ORIGINS)[number];
 
-/* ================================
-   폼 데이터 타입 및 초기값
-   ================================ */
-
-/** 제출 폼 데이터 타입 정의 */
-type SubmitToolForm = {
+/* 폼 데이터 */
+type ToolForm = {
     name: string;
-    website: string;
-    region: string;
-    category: Category;
-    description: string;
-    features: string;
-    pricing: string;
-    audience: string;
-    platforms: string[];
-    extra: string;
+    subTitle: string;
+    categories: Category[];
+    origin: Origin | "";
+    url: string;
+    logo: string; // URL 또는 "/파일명.확장자"
+    long: string;
 };
 
-/** 폼 초기값 */
-const initialForm: SubmitToolForm = {
+/* 초기값 */
+const initialForm: ToolForm = {
     name: "",
-    website: "",
-    region: "",
-    category: CATEGORIES[0],
-    description: "",
-    features: "",
-    pricing: "",
-    audience: "",
-    platforms: [],
-    extra: "",
+    subTitle: "",
+    categories: [],
+    origin: "",
+    url: "",
+    logo: "",
+    long: "",
 };
 
-/* ================================
-   유효성 검사 및 더미 제출 함수
-   ================================ */
-
-/** URL 형식 확인용 정규식 */
+/* 검증 규칙 */
+type Errors = Partial<Record<keyof ToolForm, string>>;
 const urlRegex = /^(https?):\/\/\S+$/i;
-/** 공백 여부 검사 */
+// 선행 "/" 뒤로 "/" 제외 임의 문자 허용(공백/한글 포함), 확장자 검사
+const localPathRegex = /^\/[^/]+\.(png|jpe?g|gif|webp|svg)$/i;
 const required = (v: string) => v.trim().length > 0;
 
-/** 입력값 검증 함수 */
-function validate(form: SubmitToolForm) {
-    const e: Partial<Record<keyof SubmitToolForm, string>> = {};
-    if (!required(form.name)) e.name = "서비스 이름을 입력하세요";
-    if (!required(form.website) || !urlRegex.test(form.website))
-        e.website = "유효한 웹사이트 주소(https://)를 입력하세요";
-    if (!required(form.region)) e.region = "서비스 지역을 입력하세요";
-    if (!required(form.category)) e.category = "카테고리를 선택하세요";
-    if (!required(form.description)) e.description = "설명을 입력하세요";
+function validate(form: ToolForm): Errors {
+    const e: Errors = {};
+    if (!required(form.name)) e.name = "이름을 입력하세요.";
+    if (!required(form.subTitle)) e.subTitle = "부제목을 입력하세요.";
+    if (!form.categories.length) e.categories = "카테고리를 1개 이상 선택하세요.";
+    if (!required(form.origin)) e.origin = "지역을 선택하세요.";
+    if (!required(form.url) || !urlRegex.test(form.url)) e.url = "유효한 URL을 입력하세요.";
+
+    // http(s) 또는 "/파일명.확장자" 허용
+    if (!required(form.logo) || !(urlRegex.test(form.logo) || localPathRegex.test(form.logo))) {
+        e.logo = "유효한 로고(웹 URL 또는 /파일이름.확장자)를 입력/첨부하세요.";
+    }
+
+    if (!required(form.long)) e.long = "상세 설명을 입력하세요.";
     return e;
 }
 
-/** 더미 제출 API (실제 서버 없음) */
-async function submitTool(form: SubmitToolForm) {
-    return new Promise<SubmitToolForm>((r) => setTimeout(() => r(form), 500));
+/* 더미 제출 */
+async function submitTool(form: ToolForm) {
+    return new Promise<ToolForm>((r) => setTimeout(() => r(form), 500));
 }
 
-/* ================================
-   메인 컴포넌트
-   ================================ */
-
+/* 컴포넌트 */
 export default function SubmitToolPage() {
-    /* ---- 상태 정의 ---- */
-    const [form, setForm] = useState(initialForm); // 입력 데이터
-    const [errors, setErrors] = useState<
-        Partial<Record<keyof SubmitToolForm, string>>
-    >({}); // 유효성 에러 메시지
-    const [submitting, setSubmitting] = useState(false); // 제출 중 여부
-    const [preview, setPreview] = useState<SubmitToolForm | null>(null); // 미리보기 데이터
-    const [okMessage, setOkMessage] = useState(""); // 성공 메시지
+    const [form, setForm] = useState<ToolForm>(initialForm);
+    const [errors, setErrors] = useState<Errors>({});
+    const [submitting, setSubmitting] = useState(false);
+    const [preview, setPreview] = useState<ToolForm | null>(null);
+    const [okMessage, setOkMessage] = useState("");
 
-    /* ---- 특징 칩(Chip) 표시용: 콤마·줄바꿈으로 구분 ---- */
-    const featureChips = useMemo(
-        () =>
-            form.features
-                .split(/[\n,]/)
-                .map((s) => s.trim())
-                .filter(Boolean),
-        [form.features]
-    );
+    // 로고 첨부 상태
+    const [attachedFile, setAttachedFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    /* ---- 입력 핸들러 ---- */
-    const onChange = <K extends keyof SubmitToolForm>(
-        k: K,
-        v: SubmitToolForm[K]
-    ) => setForm((p) => ({ ...p, [k]: v }));
+    const onChange = <K extends keyof ToolForm>(k: K, v: ToolForm[K]) =>
+        setForm((p) => ({ ...p, [k]: v }));
 
-    /* ---- 제출 처리 ---- */
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setOkMessage("");
         const v = validate(form);
         setErrors(v);
-        if (Object.keys(v).length) return; // 에러가 있으면 중단
+        if (Object.keys(v).length) return;
 
         setSubmitting(true);
         try {
@@ -139,36 +103,96 @@ export default function SubmitToolPage() {
         }
     }
 
-    /* ================================
-       렌더링 영역
-       ================================ */
+    // 첨부 버튼
+    function handleAttachClick() {
+        fileInputRef.current?.click();
+    }
+
+    // 파일 선택 → "/파일명.확장자"로 자동 채움
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const f = e.target.files?.[0] ?? null;
+        if (!f) return;
+        setAttachedFile(f);
+        onChange("logo", `/${f.name}`);
+        setErrors((prev) => ({ ...prev, logo: undefined }));
+    }
+
+    // 첨부 취소
+    function handleCancelAttach() {
+        setAttachedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        onChange("logo", "");
+    }
+
+    // 폼 초기화
+    function handleReset() {
+        setForm(initialForm);
+        setErrors({});
+        setOkMessage("");
+        setPreview(null);
+        setAttachedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+
     return (
         <div className={s["submit-wrap"]}>
             <div className={s["submit-container"]}>
-                {/* ───────── 헤더 영역 ───────── */}
                 <header className={s["submit-header"]}>
                     <h1 className={s["submit-title"]}>AI 서비스 등록</h1>
-                    <p className={s["submit-sub"]}>
-                        AI 툴을 빠르게 찾고, 내가 만든 툴도 소개해 보세요.
-                    </p>
+                    <p className={s["submit-sub"]}></p>
                 </header>
 
-                {/* ───────── 등록 폼 ───────── */}
                 <section className={s["submit-card"]}>
                     <form onSubmit={onSubmit} className={s["submit-grid"]}>
-                        {/* 서비스 이름 */}
+                        {/* 이름 */}
                         <div className={s.field}>
                             <label className={s.label}>
-                                서비스 이름 <span className={s.req}>*</span>
+                                이름 <span className={s.req}>*</span>
                             </label>
                             <input
                                 className={s.input}
-                                placeholder="예) CompassAI"
+                                placeholder="예) 챗지피티 (ChatGPT)"
                                 value={form.name}
                                 onChange={(e) => onChange("name", e.target.value)}
                                 aria-invalid={!!errors.name}
                             />
                             {errors.name && <p className={s.error}>{errors.name}</p>}
+                        </div>
+
+                        {/* 부제목 */}
+                        <div className={s.field}>
+                            <label className={s.label}>
+                                부제목 <span className={s.req}>*</span>
+                            </label>
+                            <input
+                                className={s.input}
+                                placeholder="예) 대화형 AI"
+                                value={form.subTitle}
+                                onChange={(e) => onChange("subTitle", e.target.value)}
+                                aria-invalid={!!errors.subTitle}
+                            />
+                            {errors.subTitle && <p className={s.error}>{errors.subTitle}</p>}
+                        </div>
+
+                        {/* 지역 */}
+                        <div className={s.field}>
+                            <label className={s.label}>
+                                지역 <span className={s.req}>*</span>
+                            </label>
+                            <select
+                                className={s.input}
+                                value={form.origin}
+                                onChange={(e) => onChange("origin", e.target.value as Origin)}
+                                aria-invalid={!!errors.origin}
+                            >
+                                <option value="">선택하세요</option>
+                                {ORIGINS.map((o) => (
+                                    <option key={o} value={o}>
+                                        {o}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.origin && <p className={s.error}>{errors.origin}</p>}
                         </div>
 
                         {/* 웹사이트 주소 */}
@@ -178,166 +202,109 @@ export default function SubmitToolPage() {
                             </label>
                             <input
                                 className={s.input}
-                                placeholder="https://example.com"
-                                value={form.website}
-                                onChange={(e) => onChange("website", e.target.value)}
-                                aria-invalid={!!errors.website}
+                                placeholder="https://chatgpt.com/"
+                                value={form.url}
+                                onChange={(e) => onChange("url", e.target.value)}
+                                aria-invalid={!!errors.url}
                             />
-                            {errors.website && <p className={s.error}>{errors.website}</p>}
+                            {errors.url && <p className={s.error}>{errors.url}</p>}
                         </div>
 
-                        {/* 서비스 지역 */}
+                        {/* 로고(URL) */}
                         <div className={s.field}>
                             <label className={s.label}>
-                                서비스 지역 <span className={s.req}>*</span>
+                                로고(URL) <span className={s.req}>*</span>
                             </label>
                             <input
                                 className={s.input}
-                                placeholder="예) 한국, 글로벌"
-                                value={form.region}
-                                onChange={(e) => onChange("region", e.target.value)}
-                                aria-invalid={!!errors.region}
+                                placeholder={attachedFile ? "/파일이름.확장자" : "https://example.com/logo.png"}
+                                value={form.logo}
+                                onChange={(e) => {
+                                    if (!attachedFile) onChange("logo", e.target.value);
+                                }}
+                                disabled={!!attachedFile}
+                                aria-invalid={!!errors.logo}
+                                title={attachedFile ? "첨부를 취소하면 URL을 수정할 수 있습니다." : ""}
                             />
-                            {errors.region && <p className={s.error}>{errors.region}</p>}
+                            {errors.logo && <p className={s.error}>{errors.logo}</p>}
                         </div>
 
-                        {/* 서비스 유형(카테고리) */}
+                        {/* 로고(테스트용) */}
                         <div className={s.field}>
                             <label className={s.label}>
-                                서비스 유형(카테고리) <span className={s.req}>*</span>
+                                로고(테스트용) <span className={s.req}>*</span>
                             </label>
-                            <select
-                                className={s.input}
-                                value={form.category}
-                                onChange={(e) =>
-                                    onChange("category", e.target.value as Category)
-                                }
-                                aria-invalid={!!errors.category}
-                            >
-                                {CATEGORIES.map((c) => (
-                                    <option key={c} value={c}>
-                                        {c}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.category && <p className={s.error}>{errors.category}</p>}
-                        </div>
 
-                        {/* 가격 */}
-                        <div className={s.field}>
-                            <label className={s.label}>가격(변동 가능)</label>
                             <input
-                                className={s.input}
-                                placeholder="예) 무료 / 프리미엄(월 $10) / 문의 / 변동가"
-                                value={form.pricing}
-                                onChange={(e) => onChange("pricing", e.target.value)}
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                style={{ display: "none" }}
                             />
-                            <p className={s.hint}>
-                                자유 입력: free / freemium / paid / 문의 / 기타 상세 등
-                            </p>
+
+                            {!attachedFile ? (
+                                <button type="button" className={`${s.input} ${s.uploadBtn}`} onClick={handleAttachClick}>
+                                    로고 첨부
+                                </button>
+                            ) : (
+                                <button type="button" className={`${s.input} ${s.uploadBtn} ${s.cancel}`} onClick={handleCancelAttach}>
+                                    첨부 취소
+                                </button>
+                            )}
                         </div>
 
-                        {/* 대상자층 */}
-                        <div className={s.field}>
-                            <label className={s.label}>대상자층</label>
-                            <input
-                                className={s.input}
-                                placeholder="예) 학생, 마케터, 개발자, 디자이너 등"
-                                value={form.audience}
-                                onChange={(e) => onChange("audience", e.target.value)}
-                            />
-                        </div>
-
-                        {/* 지원 플랫폼(다중선택) */}
+                        {/* 카테고리 */}
                         <div className={`${s.field} ${s.full}`}>
-                            <label className={s.label}>지원 플랫폼 (다중 선택 가능)</label>
+                            <label className={s.label}>
+                                카테고리 <span className={s.hintInline}>복수 선택 가능</span> <span className={s.req}>*</span>
+                            </label>
+
                             <div className={s.checks}>
-                                {PLATFORM_OPTIONS.map((p) => {
-                                    const checked = form.platforms.includes(p);
+                                {CATEGORIES.map((c) => {
+                                    const checked = form.categories.includes(c);
                                     return (
-                                        <label key={p} className={s["check-item"]}>
+                                        <label key={c} className={s["check-item"]}>
                                             <input
                                                 type="checkbox"
                                                 checked={checked}
                                                 onChange={(e) => {
                                                     const next = e.target.checked
-                                                        ? [...form.platforms, p]
-                                                        : form.platforms.filter((x) => x !== p);
-                                                    onChange("platforms", next);
+                                                        ? [...form.categories, c]
+                                                        : form.categories.filter((x) => x !== c);
+                                                    onChange("categories", next);
                                                 }}
                                             />
-                                            <span>{p}</span>
+                                            <span>{c}</span>
                                         </label>
                                     );
                                 })}
                             </div>
+                            {errors.categories && <p className={s.error}>{errors.categories}</p>}
                         </div>
 
-                        {/* 설명 */}
+                        {/* 상세 설명 */}
                         <div className={`${s.field} ${s.full}`}>
                             <label className={s.label}>
-                                설명 <span className={s.req}>*</span>
+                                상세 설명 <span className={s.req}>*</span>
                             </label>
                             <textarea
                                 className={`${s.input} ${s.textarea}`}
-                                rows={4}
-                                placeholder="서비스의 목적과 주요 제공 가치를 간단히 작성하세요"
-                                value={form.description}
-                                onChange={(e) => onChange("description", e.target.value)}
-                                aria-invalid={!!errors.description}
+                                rows={5}
+                                placeholder="서비스의 목적과 특징을 자세히 작성하세요."
+                                value={form.long}
+                                onChange={(e) => onChange("long", e.target.value)}
+                                aria-invalid={!!errors.long}
                             />
-                            {errors.description && (
-                                <p className={s.error}>{errors.description}</p>
-                            )}
+                            {errors.long && <p className={s.error}>{errors.long}</p>}
                         </div>
 
-                        {/* 주요 특징 */}
-                        <div className={`${s.field} ${s.full}`}>
-                            <label className={s.label}>주요 특징</label>
-                            <textarea
-                                className={`${s.input} ${s.textarea}`}
-                                rows={4}
-                                placeholder={`줄바꿈 또는 ,(콤마)로 구분해서 입력하세요\n예) 한국어 지원, 무료 플랜, API 제공, 팀 협업 기능`}
-                                value={form.features}
-                                onChange={(e) => onChange("features", e.target.value)}
-                            />
-                            {featureChips.length > 0 && (
-                                <div className={s.chips}>
-                                    {featureChips.map((chip, i) => (
-                                        <span key={`${chip}-${i}`} className={s.chip}>
-                      {chip}
-                    </span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 기타 정보 */}
-                        <div className={`${s.field} ${s.full}`}>
-                            <label className={s.label}>기타 정보</label>
-                            <textarea
-                                className={`${s.input} ${s.textarea}`}
-                                rows={3}
-                                placeholder="라이선스/제약/특이사항 등"
-                                value={form.extra}
-                                onChange={(e) => onChange("extra", e.target.value)}
-                            />
-                        </div>
-
-                        {/* 액션 버튼 */}
+                        {/* 액션 */}
                         <div className={`${s.actions} ${s.full}`}>
-                            <button
-                                type="button"
-                                className={`${s.btn} ${s["btn-ghost"]}`}
-                                onClick={() => setForm(initialForm)}
-                            >
+                            <button type="button" className={`${s.btn} ${s["btn-ghost"]}`} onClick={handleReset}>
                                 초기화
                             </button>
-                            <button
-                                type="button"
-                                className={`${s.btn} ${s["btn-ghost"]}`}
-                                onClick={() => setPreview(form)}
-                            >
+                            <button type="button" className={`${s.btn} ${s["btn-ghost"]}`} onClick={() => setPreview(form)}>
                                 미리보기
                             </button>
                             <button type="submit" className={s.btn} disabled={submitting}>
@@ -345,18 +312,15 @@ export default function SubmitToolPage() {
                             </button>
                         </div>
 
-                        {/* 성공 메시지 */}
                         {okMessage && <p className={s.ok}>{okMessage}</p>}
                     </form>
                 </section>
 
-                {/* ───────── 미리보기 섹션 ───────── */}
+                {/* 미리보기 */}
                 {preview && (
                     <section className={s["submit-card"]}>
                         <h3 className={s["preview-title"]}>제출 데이터 미리보기</h3>
-                        <pre className={s["preview-pre"]}>
-              {JSON.stringify(preview, null, 2)}
-            </pre>
+                        <pre className={s["preview-pre"]}>{JSON.stringify(preview, null, 2)}</pre>
                     </section>
                 )}
             </div>

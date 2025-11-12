@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { postJSON } from "@/api/client";
+import { postJSON, login } from "@/api/client";
 import s from "./Signup.module.css";
 
 type Errors = {
@@ -11,6 +11,29 @@ type Errors = {
     agree?: string;
     root?: string;
 };
+
+function getErrorMessage(e: unknown): string {
+    if (e instanceof Error && e.message) return e.message;
+    const anyErr = e as { message?: string; response?: { statusText?: string; data?: { message?: string } } } | undefined;
+    return anyErr?.response?.data?.message
+        ?? anyErr?.response?.statusText
+        ?? anyErr?.message
+        ?? "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+function mapMessageToFieldErrors(msg: string): Partial<Errors> {
+    const m = msg.toLowerCase();
+
+    if (m.includes("이미 존재") || m.includes("중복") || m.includes("exists") || m.includes("duplicate")) {
+        return { email: "이미 사용 중인 이메일입니다." };
+    }
+
+    if (m.includes("이름")) return { name: msg };
+    if (m.includes("email") || m.includes("이메일")) return { email: msg };
+    if (m.includes("비밀번호") || m.includes("password")) return { password: msg };
+
+    return { root: msg };
+}
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -47,16 +70,15 @@ export default function Signup() {
         if (!validate()) return;
 
         setLoading(true);
+        setErr({});
         try {
             await postJSON("/auth/signup", { name, email, password });
-            navigate(`/login?email=${encodeURIComponent(email)}`);
-        } catch (error) {
-            if (error instanceof Error) {
-                console.error(error.message);
-            }
-            setErr({
-                root: "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-            });
+            await login({ email, password });
+            navigate("/");
+        } catch (e: unknown) {
+            const msg = getErrorMessage(e);
+            const mapped = mapMessageToFieldErrors(msg);
+            setErr((prev) => ({ ...prev, ...mapped }));
         } finally {
             setLoading(false);
         }
@@ -73,7 +95,7 @@ export default function Signup() {
                     <span className={s.label}>이름</span>
                     <input
                         className={`${s.input} ${err.name ? s.invalid : ""}`}
-                        placeholder="test"
+                        placeholder="홍길동"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />

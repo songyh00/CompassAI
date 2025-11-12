@@ -47,14 +47,9 @@ export default function Login() {
         setLoading(true);
         setErr({});
         try {
-            // ✅ 백엔드 로그인
             await login({ email, password });
-
-            // 이메일 저장(옵션)
             if (remember) localStorage.setItem("compassai_last_email", email);
             else localStorage.removeItem("compassai_last_email");
-
-            // 성공 → 홈으로
             navigate("/");
         } catch (error) {
             const msg =
