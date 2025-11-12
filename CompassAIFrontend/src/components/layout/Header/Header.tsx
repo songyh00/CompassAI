@@ -1,4 +1,4 @@
-// Header.tsx — 커뮤니티/고객센터/이름 + 드롭다운(마이페이지, AI 등록, 구분선, 로그아웃)
+// src/components/layout/Header.tsx
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import s from "./Header.module.css";
@@ -12,12 +12,10 @@ export default function Header() {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const navigate = useNavigate();
 
-    // 세션 사용자 조회
     useEffect(() => {
         me().then(setUser).catch(() => setUser(null));
     }, []);
 
-    // 인증 상태 변경 시 갱신
     useEffect(() => {
         const handle = () => me().then(setUser).catch(() => setUser(null));
         window.addEventListener("auth:changed", handle);
@@ -36,11 +34,10 @@ export default function Header() {
             setUser(null);
             navigate("/");
         } catch {
-            /* 필요 시 처리 */
+            /* no-op */
         }
     };
 
-    // 외부 클릭 닫기
     useEffect(() => {
         if (!open) return;
         const onDocClick = (e: MouseEvent) => {
@@ -53,7 +50,6 @@ export default function Header() {
         return () => document.removeEventListener("click", onDocClick);
     }, [open]);
 
-    // ESC 닫기
     useEffect(() => {
         if (!open) return;
         const onKey = (e: KeyboardEvent) => {
@@ -63,7 +59,7 @@ export default function Header() {
         return () => document.removeEventListener("keydown", onKey);
     }, [open]);
 
-    const toggleMenu = () => setOpen(v => !v);
+    const toggleMenu = () => setOpen((v) => !v);
 
     return (
         <header className={s.header}>
@@ -74,7 +70,6 @@ export default function Header() {
                 </a>
 
                 <nav className={s.links} aria-label="유틸리티 메뉴">
-                    {/* 비로그인: 커뮤니티/고객센터 + 로그인/회원가입 */}
                     {!user ? (
                         <>
                             <Link to="/community">커뮤니티</Link>
@@ -87,13 +82,11 @@ export default function Header() {
                         </>
                     ) : (
                         <>
-                            {/* 전역 메뉴 */}
                             <Link to="/community">커뮤니티</Link>
                             <span className={s.divider} aria-hidden="true">|</span>
                             <Link to="/help">고객센터</Link>
                             <span className={s.divider} aria-hidden="true">|</span>
 
-                            {/* 이름 드롭다운 */}
                             <div className={s.menuGroup}>
                                 <button
                                     ref={btnRef}

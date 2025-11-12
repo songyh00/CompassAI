@@ -1,6 +1,8 @@
+// src/pages/signup/Signup.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { postJSON, login } from "@/api/client";
+import { postJSON } from "@/api/apiUtils";   // ← 변경 포인트
+import { login } from "@/api/client";        // ← 로그인은 client.ts
 import s from "./Signup.module.css";
 
 type Errors = {
@@ -14,11 +16,16 @@ type Errors = {
 
 function getErrorMessage(e: unknown): string {
     if (e instanceof Error && e.message) return e.message;
-    const anyErr = e as { message?: string; response?: { statusText?: string; data?: { message?: string } } } | undefined;
-    return anyErr?.response?.data?.message
-        ?? anyErr?.response?.statusText
-        ?? anyErr?.message
-        ?? "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+    const anyErr = e as {
+        message?: string;
+        response?: { statusText?: string; data?: { message?: string } };
+    } | undefined;
+    return (
+        anyErr?.response?.data?.message ??
+        anyErr?.response?.statusText ??
+        anyErr?.message ??
+        "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요."
+    );
 }
 
 function mapMessageToFieldErrors(msg: string): Partial<Errors> {
@@ -154,13 +161,8 @@ export default function Signup() {
                         onChange={(e) => setAgree(e.target.checked)}
                     />
                     <span>
-            <Link to="/terms" className={s.link}>
-              서비스 이용약관
-            </Link>{" "}
-                        및{" "}
-                        <Link to="/privacy" className={s.link}>
-              개인정보 처리방침
-            </Link>
+            <Link to="/terms" className={s.link}>서비스 이용약관</Link>{" "}및{" "}
+                        <Link to="/privacy" className={s.link}>개인정보 처리방침</Link>
             에 동의합니다.
           </span>
                 </label>
@@ -172,9 +174,7 @@ export default function Signup() {
 
                 <p className={s.foot}>
                     이미 계정이 있으신가요?{" "}
-                    <Link to="/login" className={s.link}>
-                        로그인
-                    </Link>
+                    <Link to="/login" className={s.link}>로그인</Link>
                 </p>
             </form>
         </div>

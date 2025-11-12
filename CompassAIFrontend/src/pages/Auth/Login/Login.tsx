@@ -1,3 +1,4 @@
+// src/pages/login/Login.tsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { login } from "@/api/client";
@@ -25,8 +26,7 @@ export default function Login() {
             const saved = localStorage.getItem("compassai_last_email");
             if (saved) setEmail(saved);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [email]);
 
     const validate = () => {
         const next: LoginErrors = {};
