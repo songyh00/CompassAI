@@ -38,7 +38,14 @@ public class AuthService {
 
         try {
             User saved = userRepository.save(user);
-            return new UserSignupResponse(saved.getId(), saved.getName(), saved.getEmail());
+
+            // ✅ role까지 포함해서 응답으로 내려준다
+            return new UserSignupResponse(
+                    saved.getId(),
+                    saved.getName(),
+                    saved.getEmail(),
+                    saved.getRole().name()   // "USER" / "ADMIN"
+            );
         } catch (DataIntegrityViolationException e) {
             // 동시에 가입 요청이 들어오는 등의 상황에서 중복 키 에러가 날 수 있으므로 한 번 더 방어한다
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
@@ -57,7 +64,13 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        return new UserLoginResponse(user.getId(), user.getName(), user.getEmail());
+        // ✅ 여기서도 role 포함해서 내려준다
+        return new UserLoginResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name()   // "USER" / "ADMIN"
+        );
     }
 
     // 이메일을 한 번 정규화해서 쓰기 위한 유틸 메서드

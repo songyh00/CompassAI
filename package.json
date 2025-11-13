@@ -6,18 +6,14 @@
   ],
   "scripts": {
     "dev:frontend": "npm --workspace CompassAIFrontend run dev",
-
     "dev:backend:win": "dotenv -e .env -- cross-env-shell \"cd CompassAIBackend && gradlew.bat bootRun\"",
     "dev:backend:unix": "dotenv -e .env -- sh -c 'cd CompassAIBackend && ./gradlew bootRun'",
-
     "dev": "concurrently -k -n backend,frontend -c blue,green \"npm:dev:backend:win\" \"npm:dev:frontend\"",
     "dev:unix": "concurrently -k -n backend,frontend -c blue,green \"npm:dev:backend:unix\" \"npm:dev:frontend\"",
-
     "build:frontend": "npm --workspace CompassAIFrontend run build",
     "build:backend:win": "cd CompassAIBackend && gradlew.bat build",
     "build:backend:unix": "sh -c 'cd CompassAIBackend && ./gradlew build'",
     "build": "npm run build:frontend && npm run build:backend:win",
-
     "clean": "npm --workspace CompassAIFrontend run clean || echo ok"
   },
   "devDependencies": {

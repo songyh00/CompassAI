@@ -15,4 +15,7 @@ public class UserSignupResponse {
 
     // 유저 이메일
     private String email;
+
+    // ✅ 유저 권한 (USER / ADMIN)
+    private String role;
 }

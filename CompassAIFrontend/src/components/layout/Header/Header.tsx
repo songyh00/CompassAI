@@ -12,10 +12,12 @@ export default function Header() {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const navigate = useNavigate();
 
+    // 로그인 유저 정보 조회
     useEffect(() => {
         me().then(setUser).catch(() => setUser(null));
     }, []);
 
+    // auth:changed 이벤트(로그인/로그아웃 후 갱신)
     useEffect(() => {
         const handle = () => me().then(setUser).catch(() => setUser(null));
         window.addEventListener("auth:changed", handle);
@@ -38,6 +40,7 @@ export default function Header() {
         }
     };
 
+    // 드롭다운 바깥 클릭 시 닫기
     useEffect(() => {
         if (!open) return;
         const onDocClick = (e: MouseEvent) => {
@@ -50,6 +53,7 @@ export default function Header() {
         return () => document.removeEventListener("click", onDocClick);
     }, [open]);
 
+    // ESC 키로 닫기
     useEffect(() => {
         if (!open) return;
         const onKey = (e: KeyboardEvent) => {
@@ -61,10 +65,19 @@ export default function Header() {
 
     const toggleMenu = () => setOpen((v) => !v);
 
+    // ✅ 진짜 관리자만: role 이 ADMIN 또는 ROLE_ADMIN 일 때만 true
+    const isAdmin =
+        !!user && (user.role === "ADMIN" || user.role === "ROLE_ADMIN");
+
     return (
         <header className={s.header}>
             <div className={s.inner}>
-                <a href="/" className={s.brand} aria-label="CompassAI Home" onClick={goHome}>
+                <a
+                    href="/"
+                    className={s.brand}
+                    aria-label="CompassAI Home"
+                    onClick={goHome}
+                >
                     <img className={s.logo} src="/logo.png" alt="CompassAI 로고" />
                     <span className={s.text}>CompassAI</span>
                 </a>
@@ -73,19 +86,29 @@ export default function Header() {
                     {!user ? (
                         <>
                             <Link to="/community">커뮤니티</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
+                            <span className={s.divider} aria-hidden="true">
+                                |
+                            </span>
                             <Link to="/help">고객센터</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
+                            <span className={s.divider} aria-hidden="true">
+                                |
+                            </span>
                             <Link to="/login">로그인</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
+                            <span className={s.divider} aria-hidden="true">
+                                |
+                            </span>
                             <Link to="/signup">회원가입</Link>
                         </>
                     ) : (
                         <>
                             <Link to="/community">커뮤니티</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
+                            <span className={s.divider} aria-hidden="true">
+                                |
+                            </span>
                             <Link to="/help">고객센터</Link>
-                            <span className={s.divider} aria-hidden="true">|</span>
+                            <span className={s.divider} aria-hidden="true">
+                                |
+                            </span>
 
                             <div className={s.menuGroup}>
                                 <button
@@ -97,7 +120,9 @@ export default function Header() {
                                     onClick={toggleMenu}
                                 >
                                     <span className={s.hello}>{user.name}님</span>
-                                    <span className={s.caret} aria-hidden="true">▾</span>
+                                    <span className={s.caret} aria-hidden="true">
+                                        ▾
+                                    </span>
                                 </button>
 
                                 {open && (
@@ -125,7 +150,22 @@ export default function Header() {
                                             AI 등록
                                         </Link>
 
-                                        <div className={s.separator} role="separator" />
+                                       {isAdmin && (
+                                           <Link
+                                               to="/admin/tools/review"
+                                               role="menuitem"
+                                               className={s.dropdownItem}
+                                               onClick={() => setOpen(false)}
+                                           >
+                                               AI 검수
+                                           </Link>
+                                       )}
+
+
+                                        <div
+                                            className={s.separator}
+                                            role="separator"
+                                        />
 
                                         <button
                                             role="menuitem"

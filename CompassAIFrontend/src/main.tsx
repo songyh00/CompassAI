@@ -1,3 +1,5 @@
+// src/main.tsx 또는 src/index.tsx (프로젝트 구조에 맞춰 파일명 사용)
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -8,6 +10,7 @@ import Login from "./pages/Auth/Login/Login.tsx";
 import Signup from "./pages/Auth/Signup/Signup.tsx";
 import HelpCenter from "./pages/Help/HelpCenter";
 import SubmitToolPage from "./pages/Submit/SubmitToolPage.tsx";
+import AdminToolReview from "./pages/Admin/AdminToolReview.tsx"; // ✅ 관리자 페이지
 import "./index.css";
 
 /* 루트 렌더링 */
@@ -25,6 +28,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                     <Route path="signup" element={<Signup />} />
                     <Route path="help" element={<HelpCenter />} />
                     <Route path="submit" element={<SubmitToolPage />} />
+
+                    {/* ✅ 관리자: AI 등록 검수 페이지 */}
+                    <Route path="admin/tools/review" element={<AdminToolReview />} />
 
                     {/* 404 */}
                     <Route

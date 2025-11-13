@@ -1,7 +1,16 @@
+// src/api/client.ts
 import { getJSON, postJSON, postEmpty } from "./apiUtils";
 
-export type LoginResp = { id: number; name: string; email: string };
-export type Me = LoginResp | null;
+export type Role = "USER" | "ADMIN";
+
+export type Me = {
+    id: number;
+    name: string;
+    email: string;
+    role: Role;
+};
+
+export type LoginResp = Me;
 
 function notifyAuthChanged() {
     window.dispatchEvent(new Event("auth:changed"));

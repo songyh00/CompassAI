@@ -1,5 +1,6 @@
 package com.compassai.backend.auth;
 
+import com.compassai.backend.auth.dto.MeResponse;
 import com.compassai.backend.auth.dto.UserLoginRequest;
 import com.compassai.backend.auth.dto.UserLoginResponse;
 import com.compassai.backend.auth.dto.UserSignupRequest;
@@ -71,8 +72,14 @@ public class AuthController {
             // 서비스 계층에 회원가입을 요청한다.
             UserSignupResponse res = authService.signup(req);
 
-            // 회원가입이 성공하면 자동으로 로그인 처리한다.
-            session.setAttribute(SESSION_USER_KEY, res);
+            // ✅ 세션에는 공통 MeResponse 형태로 저장 (role 포함)
+            MeResponse sessionUser = new MeResponse(
+                    res.getId(),
+                    res.getName(),
+                    res.getEmail(),
+                    res.getRole()
+            );
+            session.setAttribute(SESSION_USER_KEY, sessionUser);
 
             return ResponseEntity.ok(res);
         } catch (IllegalArgumentException e) {
@@ -117,8 +124,14 @@ public class AuthController {
             // 세션 고정 공격을 막기 위해 로그인 직후 세션ID를 재발급한다.
             httpReq.changeSessionId();
 
-            // 필요한 최소 정보만 세션에 저장한다.
-            session.setAttribute(SESSION_USER_KEY, res);
+            // ✅ 세션에는 공통 MeResponse 형태로 저장 (role 포함)
+            MeResponse sessionUser = new MeResponse(
+                    res.getId(),
+                    res.getName(),
+                    res.getEmail(),
+                    res.getRole()
+            );
+            session.setAttribute(SESSION_USER_KEY, sessionUser);
 
             return ResponseEntity.ok(res);
         } catch (IllegalArgumentException e) {
@@ -137,8 +150,8 @@ public class AuthController {
             description = "로그인되어 있으면 사용자 정보를, 아니면 null을 반환합니다."
     )
     @GetMapping("/me")
-    public ResponseEntity<?> me(HttpSession session) {
-        Object user = session.getAttribute(SESSION_USER_KEY);
+    public ResponseEntity<MeResponse> me(HttpSession session) {
+        MeResponse user = (MeResponse) session.getAttribute(SESSION_USER_KEY);
         // 로그인하지 않은 경우에도 200 응답에 null을 담아 보낸다.
         return ResponseEntity.ok(user);
     }
