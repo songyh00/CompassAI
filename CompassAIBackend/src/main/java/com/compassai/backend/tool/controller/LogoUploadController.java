@@ -1,56 +1,63 @@
 package com.compassai.backend.tool.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.Objects;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 
-/**
- * 로고 이미지 업로드 전용 컨트롤러
- * - 실제 파일은 CompassAIFrontend/public/logos 에 저장
- * - DB/프론트에는 "/logos/파일명" 형태의 경로만 저장
- */
 @RestController
-@RequestMapping("/api/tools")
+@RequestMapping("/api/tools/logos")
 public class LogoUploadController {
 
-    // Backend 기준 작업 디렉토리가 CompassAI/CompassAIBackend 라고 가정
-    private static final Path FRONTEND_PUBLIC =
-            Paths.get("..", "CompassAIFrontend", "public");
-    private static final Path LOGO_DIR = FRONTEND_PUBLIC.resolve("logos");
+    @PostMapping
+    public ResponseEntity<Map<String, String>> uploadLogo(@RequestPart("file") MultipartFile file)
+            throws IOException {
 
-    @PostMapping("/logos")
-    public LogoUploadResponse uploadLogo(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "빈 파일입니다.");
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "빈 파일은 업로드할 수 없습니다."));
         }
 
-        // ../CompassAIFrontend/public/logos 디렉터리 없으면 생성
-        Files.createDirectories(LOGO_DIR);
-
-        String original = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String ext = StringUtils.getFilenameExtension(original);
-        if (ext == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "확장자를 알 수 없는 파일입니다.");
+        // -------- 1) 새 파일 이름 만들기 --------
+        String originalName = file.getOriginalFilename();
+        String ext = "";
+        if (originalName != null && originalName.lastIndexOf('.') != -1) {
+            ext = originalName.substring(originalName.lastIndexOf('.')); // ".png" 같은 확장자
         }
+        String newFileName = UUID.randomUUID() + ext;
 
-        String newName = UUID.randomUUID() + "." + ext.toLowerCase();
-        Path target = LOGO_DIR.resolve(newName);
+        // -------- 2) Frontend public 디렉터리 계산 --------
+        // user.dir = C:\...\CompassAI\CompassAIBackend
+        Path backendDir = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+
+        // C:\...\CompassAI\CompassAIFrontend\public
+        Path publicDir = backendDir
+                .getParent()                      // CompassAI
+                .resolve("CompassAIFrontend")     // CompassAIFrontend
+                .resolve("public");               // public
+
+        // public 폴더가 없다면 생성 (있으면 그냥 통과)
+        Files.createDirectories(publicDir);
+
+        // 최종 저장 경로: public/<랜덤파일이름>.png
+        Path target = publicDir.resolve(newFileName);
 
         // 실제 파일 저장
         file.transferTo(target.toFile());
 
-        // 프론트/DB에서 사용할 경로 (Vite가 public 기준으로 서빙)
-        String url = "/logos/" + newName;
+        // React 에서 사용할 경로 (예: <img src="/abcdef.png" />)
+        String publicPath = "/" + newFileName;
 
-        return new LogoUploadResponse(url);
+        // 필요하면 DB에 이 publicPath 를 그대로 넣으면 됨.
+        return ResponseEntity.ok(Map.of("url", publicPath));
     }
-
-    public record LogoUploadResponse(String url) {}
 }

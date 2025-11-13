@@ -45,7 +45,7 @@ const initialForm: ToolForm = {
 /* 검증 규칙 */
 type Errors = Partial<Record<keyof ToolForm, string>>;
 const urlRegex = /^(https?):\/\/\S+$/i;
-// 선행 "/" 뒤로 "/" 제외 임의 문자 허용(공백/한글 포함), 확장자 검사
+// public 루트에 저장되는 "/파일명.확장자" 형태만 허용
 const localPathRegex = /^\/[^/]+\.(png|jpe?g|gif|webp|svg)$/i;
 const required = (v: string) => v.trim().length > 0;
 
@@ -66,10 +66,35 @@ function validate(form: ToolForm): Errors {
     return e;
 }
 
-// 백엔드 연동: /api/tools/applications 로 신청 보내기
+// 응답 타입
 type SubmitResp = { applicationId: number };
 
-async function submitTool(form: ToolForm): Promise<SubmitResp> {
+// 1) 로고 파일을 백엔드로 업로드
+//    - 백엔드는 CompassAIFrontend/public 에 file.getOriginalFilename() 으로 저장해주면 됨
+//    - 우리는 경로를 "/파일명" 으로 알고 있으니, 응답 url은 쓰지 않아도 됨
+async function uploadLogoFile(file: File): Promise<void> {
+    const fd = new FormData();
+    fd.append("file", file);
+
+    const res = await fetch("/api/tools/logos", {
+        method: "POST",
+        credentials: "include",
+        body: fd,
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+        throw new Error(text || "로고 업로드에 실패했습니다.");
+    }
+}
+
+// 2) 신청 JSON 전송: /api/tools/applications
+async function submitTool(form: ToolForm, file?: File | null): Promise<SubmitResp> {
+    // 첨부 파일이 있으면 먼저 업로드
+    if (file) {
+        await uploadLogoFile(file);
+    }
+
     const res = await fetch("/api/tools/applications", {
         method: "POST",
         headers: {
@@ -113,12 +138,11 @@ export default function SubmitToolPage() {
 
         setSubmitting(true);
         try {
-            const res = await submitTool(form);
+            const res = await submitTool(form, attachedFile);
 
-            // 내가 보낸 데이터 기준으로 미리보기 유지
+            // 실제로 전송한 form 기준으로 미리보기
             setPreview(form);
 
-            // 필요하면 신청 번호도 같이 보여줄 수 있음
             if (res.applicationId && res.applicationId > 0) {
                 setOkMessage(`등록 요청이 제출되었습니다. (신청 번호: ${res.applicationId})`);
             } else {
@@ -146,6 +170,7 @@ export default function SubmitToolPage() {
         const f = e.target.files?.[0] ?? null;
         if (!f) return;
         setAttachedFile(f);
+        // public 루트에 그대로 저장한다고 가정 → "/파일명.확장자"
         onChange("logo", `/${f.name}`);
         setErrors((prev) => ({ ...prev, logo: undefined }));
     }
@@ -277,11 +302,19 @@ export default function SubmitToolPage() {
                             />
 
                             {!attachedFile ? (
-                                <button type="button" className={`${s.input} ${s.uploadBtn}`} onClick={handleAttachClick}>
+                                <button
+                                    type="button"
+                                    className={`${s.input} ${s.uploadBtn}`}
+                                    onClick={handleAttachClick}
+                                >
                                     로고 첨부
                                 </button>
                             ) : (
-                                <button type="button" className={`${s.input} ${s.uploadBtn} ${s.cancel}`} onClick={handleCancelAttach}>
+                                <button
+                                    type="button"
+                                    className={`${s.input} ${s.uploadBtn} ${s.cancel}`}
+                                    onClick={handleCancelAttach}
+                                >
                                     첨부 취소
                                 </button>
                             )}
@@ -290,7 +323,8 @@ export default function SubmitToolPage() {
                         {/* 카테고리 */}
                         <div className={`${s.field} ${s.full}`}>
                             <label className={s.label}>
-                                카테고리 <span className={s.hintInline}>복수 선택 가능</span> <span className={s.req}>*</span>
+                                카테고리 <span className={s.hintInline}>복수 선택 가능</span>{" "}
+                                <span className={s.req}>*</span>
                             </label>
 
                             <div className={s.checks}>
@@ -334,10 +368,18 @@ export default function SubmitToolPage() {
 
                         {/* 액션 */}
                         <div className={`${s.actions} ${s.full}`}>
-                            <button type="button" className={`${s.btn} ${s["btn-ghost"]}`} onClick={handleReset}>
+                            <button
+                                type="button"
+                                className={`${s.btn} ${s["btn-ghost"]}`}
+                                onClick={handleReset}
+                            >
                                 초기화
                             </button>
-                            <button type="button" className={`${s.btn} ${s["btn-ghost"]}`} onClick={() => setPreview(form)}>
+                            <button
+                                type="button"
+                                className={`${s.btn} ${s["btn-ghost"]}`}
+                                onClick={() => setPreview(form)}
+                            >
                                 미리보기
                             </button>
                             <button type="submit" className={s.btn} disabled={submitting}>
