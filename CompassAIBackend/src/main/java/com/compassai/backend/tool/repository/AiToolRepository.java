@@ -1,5 +1,6 @@
-package com.compassai.backend.domain;
+package com.compassai.backend.tool.repository;
 
+import com.compassai.backend.tool.domain.AiTool;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;

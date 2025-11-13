@@ -66,9 +66,27 @@ function validate(form: ToolForm): Errors {
     return e;
 }
 
-/* 더미 제출 */
-async function submitTool(form: ToolForm) {
-    return new Promise<ToolForm>((r) => setTimeout(() => r(form), 500));
+// 백엔드 연동: /api/tools/applications 로 신청 보내기
+type SubmitResp = { applicationId: number };
+
+async function submitTool(form: ToolForm): Promise<SubmitResp> {
+    const res = await fetch("/api/tools/applications", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include", // 로그인 세션 유지용 (백엔드에서 cookie 사용 시)
+        body: JSON.stringify(form),
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+        // 백엔드에서 에러 메시지 내려주면 그걸 쓰고, 없으면 기본 문구
+        throw new Error(text || "신청 처리 중 오류가 발생했습니다.");
+    }
+
+    // {"applicationId": 1} 같은 응답이라고 가정
+    return text ? (JSON.parse(text) as SubmitResp) : { applicationId: -1 };
 }
 
 /* 컴포넌트 */
@@ -96,8 +114,23 @@ export default function SubmitToolPage() {
         setSubmitting(true);
         try {
             const res = await submitTool(form);
-            setPreview(res);
-            setOkMessage("등록 요청이 제출되었습니다. 검토 후 반영됩니다.");
+
+            // 내가 보낸 데이터 기준으로 미리보기 유지
+            setPreview(form);
+
+            // 필요하면 신청 번호도 같이 보여줄 수 있음
+            if (res.applicationId && res.applicationId > 0) {
+                setOkMessage(`등록 요청이 제출되었습니다. (신청 번호: ${res.applicationId})`);
+            } else {
+                setOkMessage("등록 요청이 제출되었습니다. 검토 후 반영됩니다.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "등록 요청 중 알 수 없는 오류가 발생했습니다."
+            );
         } finally {
             setSubmitting(false);
         }
