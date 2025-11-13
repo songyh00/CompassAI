@@ -9,7 +9,7 @@ import lombok.Setter;
 @Schema(description = "회원가입 요청 DTO")
 public class UserSignupRequest {
 
-    @Schema(description = "사용자 이름", example = "test")
+    @Schema(description = "이름", example = "홍길동")
     private String name;
 
     @Schema(description = "이메일 주소", example = "test@test.com")

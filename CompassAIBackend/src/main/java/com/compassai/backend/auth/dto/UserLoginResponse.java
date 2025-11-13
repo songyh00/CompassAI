@@ -6,7 +6,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserLoginResponse {
+
+    // 유저 ID
     private Long id;
+
+    // 유저 이름
     private String name;
+
+    // 유저 이메일
     private String email;
 }

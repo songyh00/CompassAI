@@ -17,50 +17,54 @@ import java.util.Locale;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // BCrypt를 @Bean으로 등록해 주입받기
+    private final PasswordEncoder passwordEncoder;
 
-    /** 회원가입 (쓰기 트랜잭션) */
+    // 회원가입 처리
     @Transactional
-    public UserSignupResponse signup(UserSignupRequest req) {
-        final String email = normalizeEmail(req.getEmail());
+    public UserSignupResponse signup(UserSignupRequest request) {
+        // 이메일은 소문자+trim으로 정규화해서 저장한다
+        String email = normalizeEmail(request.getEmail());
 
-        // 선제 중복 체크(UX용). 실제 보장은 DB 유니크 제약으로.
+        // 이메일 중복 여부를 먼저 확인한다
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
-        try {
-            User user = new User();
-            user.setName(req.getName());
-            user.setEmail(email);
-            user.setPassword(passwordEncoder.encode(req.getPassword()));
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER); // 회원가입은 항상 일반 유저 권한으로 생성한다
 
-            userRepository.save(user);
-            return new UserSignupResponse(user.getId(), user.getName(), user.getEmail());
+        try {
+            User saved = userRepository.save(user);
+            return new UserSignupResponse(saved.getId(), saved.getName(), saved.getEmail());
         } catch (DataIntegrityViolationException e) {
-            // 동시성으로 인해 유니크 충돌 시 안전한 메시지로 매핑
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            // 동시에 가입 요청이 들어오는 등의 상황에서 중복 키 에러가 날 수 있으므로 한 번 더 방어한다
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
     }
 
-    /** 로그인 (읽기 전용 트랜잭션) */
+    // 로그인 처리
     @Transactional(readOnly = true)
-    public UserLoginResponse login(UserLoginRequest req) {
-        final String email = normalizeEmail(req.getEmail());
+    public UserLoginResponse login(UserLoginRequest request) {
+        String email = normalizeEmail(request.getEmail());
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다.");
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
         return new UserLoginResponse(user.getId(), user.getName(), user.getEmail());
     }
 
-    // --- 내부 유틸 ---
+    // 이메일을 한 번 정규화해서 쓰기 위한 유틸 메서드
     private String normalizeEmail(String raw) {
-        if (raw == null) return null;
+        if (raw == null) {
+            return null;
+        }
         return raw.trim().toLowerCase(Locale.ROOT);
     }
 }

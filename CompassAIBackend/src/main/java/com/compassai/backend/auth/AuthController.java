@@ -17,109 +17,163 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 인증 관련 API를 담당하는 컨트롤러
+ * - 회원가입
+ * - 로그인
+ * - 현재 사용자 조회
+ * - 로그아웃
+ */
 @Tag(name = "Auth", description = "회원 인증 API")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
+    // 세션에 사용자 정보를 저장할 때 사용하는 키
     private static final String SESSION_USER_KEY = "user";
+
+    // 리프레시 토큰을 저장하는 쿠키 이름
     private static final String REFRESH_COOKIE = "REFRESH_TOKEN";
 
     private final AuthService authService;
 
-    // 회원가입
+    /**
+     * 회원가입
+     * - 이름, 이메일, 비밀번호로 신규 회원을 등록한다.
+     * - 성공 시 세션에 사용자 정보를 저장하고 응답으로 돌려준다.
+     */
     @Operation(
             summary = "회원가입",
             description = "이름, 이메일, 비밀번호로 신규 회원을 등록합니다.",
             requestBody = @RequestBody(
                     required = true,
                     content = @Content(examples = {
-                            @ExampleObject(name = "회원가입 예시", value = """
-                                    {
-                                      "name": "test",
-                                      "email": "test@test.com",
-                                      "password": "test1234"
-                                    }
-                                    """)
+                            @ExampleObject(
+                                    name = "회원가입 예시",
+                                    value = """
+                                            {
+                                              "name": "test",
+                                              "email": "test@test.com",
+                                              "password": "test1234"
+                                            }
+                                            """
+                            )
                     })
             )
     )
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@org.springframework.web.bind.annotation.RequestBody UserSignupRequest req,
-                                    HttpSession session) {
+    public ResponseEntity<?> signup(
+            @org.springframework.web.bind.annotation.RequestBody UserSignupRequest req,
+            HttpSession session
+    ) {
         try {
+            // 서비스 계층에 회원가입을 요청한다.
             UserSignupResponse res = authService.signup(req);
+
+            // 회원가입이 성공하면 자동으로 로그인 처리한다.
             session.setAttribute(SESSION_USER_KEY, res);
+
             return ResponseEntity.ok(res);
         } catch (IllegalArgumentException e) {
+            // 예: 이메일 중복 등의 경우 400으로 에러 메시지를 반환한다.
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // 로그인
+    /**
+     * 로그인
+     * - 이메일과 비밀번호로 로그인한다.
+     * - 성공 시 세션ID를 재발급하고, 세션에 사용자 정보를 저장한다.
+     */
     @Operation(
             summary = "로그인",
             description = "이메일과 비밀번호로 로그인합니다.",
             requestBody = @RequestBody(
                     required = true,
                     content = @Content(examples = {
-                            @ExampleObject(name = "로그인 예시", value = """
-                                    {
-                                      "email": "test@test.com",
-                                      "password": "test1234"
-                                    }
-                                    """)
+                            @ExampleObject(
+                                    name = "로그인 예시",
+                                    value = """
+                                            {
+                                              "email": "test@test.com",
+                                              "password": "test1234"
+                                            }
+                                            """
+                            )
                     })
             )
     )
     @PostMapping("/login")
-    public ResponseEntity<?> login(@org.springframework.web.bind.annotation.RequestBody UserLoginRequest req,
-                                   HttpServletRequest httpReq,
-                                   HttpSession session) {
+    public ResponseEntity<?> login(
+            @org.springframework.web.bind.annotation.RequestBody UserLoginRequest req,
+            HttpServletRequest httpReq,
+            HttpSession session
+    ) {
         try {
+            // 서비스 계층에 로그인 처리를 요청한다.
             UserLoginResponse res = authService.login(req);
 
-            // 세션 고정 방지: 로그인 직후 세션ID 재발급
+            // 세션 고정 공격을 막기 위해 로그인 직후 세션ID를 재발급한다.
             httpReq.changeSessionId();
 
-            // 필요한 최소 정보만 세션 저장 (여기서는 응답 그대로)
+            // 필요한 최소 정보만 세션에 저장한다.
             session.setAttribute(SESSION_USER_KEY, res);
 
             return ResponseEntity.ok(res);
         } catch (IllegalArgumentException e) {
+            // 이메일 또는 비밀번호가 틀린 경우 401을 반환한다.
             return ResponseEntity.status(401).body(e.getMessage());
         }
     }
 
-    // 현재 사용자 (로그인 여부 확인)
-    @Operation(summary = "현재 사용자", description = "로그인되어 있으면 사용자 정보를, 아니면 null을 반환합니다.")
+    /**
+     * 현재 로그인된 사용자 조회
+     * - 세션에 저장된 사용자 정보가 있으면 그대로 반환한다.
+     * - 없으면 null을 반환한다.
+     */
+    @Operation(
+            summary = "현재 사용자",
+            description = "로그인되어 있으면 사용자 정보를, 아니면 null을 반환합니다."
+    )
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpSession session) {
         Object user = session.getAttribute(SESSION_USER_KEY);
-        return ResponseEntity.ok(user); // 로그인 안 되어 있으면 null
+        // 로그인하지 않은 경우에도 200 응답에 null을 담아 보낸다.
+        return ResponseEntity.ok(user);
     }
 
-    // 로그아웃: 세션 종료 + REFRESH_TOKEN 쿠키 만료
-    @Operation(summary = "로그아웃", description = "세션을 종료하고 리프레시 쿠키를 삭제합니다.")
+    /**
+     * 로그아웃
+     * - 세션을 종료하고 리프레시 토큰 쿠키를 만료시킨다.
+     */
+    @Operation(
+            summary = "로그아웃",
+            description = "세션을 종료하고 리프레시 쿠키를 삭제합니다."
+    )
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session, HttpServletResponse response) {
+        // 세션 전체를 무효화한다.
         session.invalidate();
+
+        // 리프레시 토큰 쿠키를 즉시 만료시킨다.
         expireCookie(response, REFRESH_COOKIE);
-        // 필요 시 JSESSIONID도 강제 만료하려면 다음 주석 해제
+
+        // 필요하다면 JSESSIONID도 강제로 만료시킬 수 있다.
         // expireCookie(response, "JSESSIONID");
+
         return ResponseEntity.ok().build();
     }
 
-    // ---- 내부 유틸: 이름이 같은 쿠키를 즉시 만료 처리 ----
+    // 내부 유틸: 같은 이름의 쿠키를 0초로 설정해 즉시 만료 처리한다.
     private void expireCookie(HttpServletResponse response, String name) {
         Cookie c = new Cookie(name, "");
-        c.setPath("/");          // 굽던 때와 동일한 path
-        c.setMaxAge(0);          // 즉시 만료
-        c.setHttpOnly(true);     // HttpOnly 유지
-        // 로컬 개발(HTTP)이라면 false, HTTPS 배포라면 true
+        c.setPath("/");          // 굽던 때와 동일한 path를 맞춘다.
+        c.setMaxAge(0);          // 0초로 설정하면 즉시 만료된다.
+        c.setHttpOnly(true);     // JavaScript에서 접근하지 못하도록 막는다.
+        // 로컬 개발(HTTP)에서는 false, HTTPS 배포 환경에서는 true로 설정한다.
         c.setSecure(false);
-        // 필요 시 SameSite 속성 (서블릿 6에서는 attribute로 지정 가능)
+        // SameSite 속성을 Lax로 설정한다.
         c.setAttribute("SameSite", "Lax");
         response.addCookie(c);
     }
