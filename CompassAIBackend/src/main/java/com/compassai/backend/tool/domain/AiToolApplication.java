@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ai_tool_application")
@@ -62,6 +64,11 @@ public class AiToolApplication {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by")
     private User processedBy;
+
+    /** 신청 ↔ 카테고리 N:N 조인 테이블 컬렉션 */
+    @Builder.Default   // 🔥 Lombok Builder가 이 초기값을 기본값으로 사용하도록
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AiToolApplicationCategory> categories = new ArrayList<>();
 
     @PrePersist
     public void onCreate() {

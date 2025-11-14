@@ -1,7 +1,9 @@
 package com.compassai.backend.tool.controller;
 
-import com.compassai.backend.tool.service.AiToolApplicationService;
+import com.compassai.backend.auth.dto.MeResponse;
 import com.compassai.backend.tool.dto.AiToolApplicationCreateRequest;
+import com.compassai.backend.tool.service.AiToolApplicationService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AiToolApplicationController {
 
+    private static final String SESSION_USER_KEY = "user";
+
     private final AiToolApplicationService applicationService;
 
     /**
@@ -19,11 +23,17 @@ public class AiToolApplicationController {
      */
     @PostMapping
     public ResponseEntity<CreateApplicationResponse> createApplication(
-            @RequestBody AiToolApplicationCreateRequest request
+            @RequestBody AiToolApplicationCreateRequest request,
+            HttpSession session
     ) {
-        // TODO: 나중에 Security 붙이면 로그인 유저에서 꺼내기
-        // ex) Long userId = currentUser.getId();
-        Long userId = 1L; // 임시 하드코딩
+        // 1) 세션에서 로그인 유저 꺼내기
+        MeResponse me = (MeResponse) session.getAttribute(SESSION_USER_KEY);
+        if (me == null) {
+            // 로그인 안돼 있으면 401
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Long userId = me.getId();  // ← 여기!
 
         Long appId = applicationService.createApplication(userId, request);
 

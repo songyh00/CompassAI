@@ -49,76 +49,35 @@ export default function AdminToolReview() {
     const [error, setError] = useState<string | null>(null);
     const [info, setInfo] = useState<string | null>(null);
 
-    // 초기 로드: 관리자용 신청 목록 가져오기
-    useEffect(() => {
-        const fetchApps = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                // TODO: 실제 API 연동
-                // const res = await fetch("/api/admin/ai-applications", { credentials: "include" });
-                // if (!res.ok) throw new Error();
-                // const data: ToolApplication[] = await res.json();
-                // setApps(data);
+   useEffect(() => {
+       const fetchApps = async () => {
+           setLoading(true);
+           setError(null);
+           try {
+               const res = await fetch("/api/admin/ai-applications", {
+                   credentials: "include",
+               });
+               const text = await res.text();
+               if (!res.ok) {
+                   throw new Error(text || "AI 등록 신청 목록을 불러오지 못했습니다.");
+               }
+               const data: ToolApplication[] = text ? JSON.parse(text) : [];
+               setApps(data);
+           } catch (err) {
+               console.error(err);
+               setError(
+                   err instanceof Error
+                       ? err.message
+                       : "AI 등록 신청 목록을 불러오지 못했습니다."
+               );
+           } finally {
+               setLoading(false);
+           }
+       };
 
-                // 개발용 목업 데이터 (스키마에 맞게)
-                const mock: ToolApplication[] = [
-                    {
-                        id: 1,
-                        name: "예시 챗봇 플랫폼",
-                        subTitle: "내가 만든 고객 상담용 챗봇",
-                        origin: "국내",
-                        url: "https://example.com/my-chatbot",
-                        logo: null,
-                        description: "고객센터 자동응답을 위한 챗봇 서비스입니다.",
-                        status: "PENDING",
-                        appliedAt: "2025-11-13 10:20",
-                        processedAt: null,
-                        rejectReason: null,
-                        applicant: { id: 10, name: "홍길동", email: "user1@example.com" },
-                        categories: ["생산성/협업도구"],
-                    },
-                    {
-                        id: 2,
-                        name: "이미지 생성 도구",
-                        subTitle: "텍스트 프롬프트 기반 이미지 생성",
-                        origin: "해외",
-                        url: "https://example.com/image-ai",
-                        logo: null,
-                        description: "텍스트 프롬프트로 이미지를 생성하는 서비스입니다.",
-                        status: "APPROVED",
-                        appliedAt: "2025-11-12 16:03",
-                        processedAt: "2025-11-12 17:30",
-                        rejectReason: null,
-                        applicant: { id: 11, name: "이디자", email: "designer@example.com" },
-                        categories: ["디자인/아트", "비디오/오디오"],
-                    },
-                    {
-                        id: 3,
-                        name: "데이터 분석 어시스턴트",
-                        subTitle: "업로드한 CSV를 자동 분석",
-                        origin: "해외",
-                        url: "https://example.com/data-assistant",
-                        logo: null,
-                        description: "CSV 업로드 후 자동으로 요약/시각화를 제공합니다.",
-                        status: "REJECTED",
-                        appliedAt: "2025-11-11 09:47",
-                        processedAt: "2025-11-11 10:10",
-                        rejectReason: "실제 서비스 URL이 아니거나 접속 불가",
-                        applicant: { id: 12, name: "데이터맨", email: "data@example.com" },
-                        categories: ["검색/데이터"],
-                    },
-                ];
-                setApps(mock);
-            } catch {
-                setError("AI 등록 신청 목록을 불러오지 못했습니다.");
-            } finally {
-                setLoading(false);
-            }
-        };
+       fetchApps();
+   }, []);
 
-        fetchApps();
-    }, []);
 
     // 상태/검색 필터
     const filtered = useMemo(() => {
@@ -172,26 +131,40 @@ export default function AdminToolReview() {
         );
 
         try {
-            // TODO: 실제 API 연동
-            // await fetch(`/api/admin/ai-applications/${appId}/status`, {
-            //   method: "PATCH",
-            //   headers: { "Content-Type": "application/json" },
-            //   credentials: "include",
-            //   body: JSON.stringify({ status: nextStatus, rejectReason }),
-            // });
+            // 🔥 실제 API 호출
+            const res = await fetch(`/api/admin/ai-applications/${appId}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    status: nextStatus,
+                    rejectReason,
+                }),
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || "상태 변경에 실패했습니다.");
+            }
 
             setInfo(
                 nextStatus === "APPROVED"
                     ? "승인 처리되었습니다."
                     : "거절 처리되었습니다."
             );
-        } catch {
-            setError("상태 변경에 실패했습니다. 다시 시도해 주세요.");
+        } catch (err) {
+            console.error(err);
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "상태 변경에 실패했습니다. 다시 시도해 주세요."
+            );
             setApps(prev); // 실패 시 롤백
         } finally {
             setBusyId(null);
         }
     };
+
 
     return (
         <div className={s.wrap}>
