@@ -1,4 +1,4 @@
-package com.compassai.backend.domain;
+package com.compassai.backend.tool.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

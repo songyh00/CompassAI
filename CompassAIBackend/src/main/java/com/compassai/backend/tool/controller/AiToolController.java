@@ -1,6 +1,9 @@
-package com.compassai.backend.domain;
+package com.compassai.backend.tool.controller;
 
-import com.compassai.backend.domain.dto.AiToolResponse;
+import com.compassai.backend.tool.domain.Category;
+import com.compassai.backend.tool.dto.AiToolResponse;
+import com.compassai.backend.tool.domain.AiTool;
+import com.compassai.backend.tool.repository.AiToolRepository;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 

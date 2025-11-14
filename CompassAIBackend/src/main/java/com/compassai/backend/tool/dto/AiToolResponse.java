@@ -1,4 +1,4 @@
-package com.compassai.backend.domain.dto;
+package com.compassai.backend.tool.dto;
 
 import java.util.List;
 
