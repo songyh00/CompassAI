@@ -27,7 +27,7 @@ public class LogoUploadController {
                     .body(Map.of("error", "빈 파일은 업로드할 수 없습니다."));
         }
 
-        // -------- 1) 새 파일 이름 만들기 --------
+        // -------- 1) 새 파일 이름 만들기 (UUID + 확장자) --------
         String originalName = file.getOriginalFilename();
         String ext = "";
         if (originalName != null && originalName.lastIndexOf('.') != -1) {

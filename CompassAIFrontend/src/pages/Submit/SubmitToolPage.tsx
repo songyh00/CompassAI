@@ -69,10 +69,10 @@ function validate(form: ToolForm): Errors {
 // 응답 타입
 type SubmitResp = { applicationId: number };
 
-// 1) 로고 파일을 백엔드로 업로드
-//    - 백엔드는 CompassAIFrontend/public 에 file.getOriginalFilename() 으로 저장해주면 됨
-//    - 우리는 경로를 "/파일명" 으로 알고 있으니, 응답 url은 쓰지 않아도 됨
-async function uploadLogoFile(file: File): Promise<void> {
+// 1) 로고 파일을 백엔드로 업로드 후, 최종 url 반환
+//    - 백엔드는 CompassAIFrontend/public 에 랜덤 파일명(UUID)으로 저장
+//    - 응답의 {"url": "/랜덤이름.png"} 를 그대로 DB에 넣을 logo 로 사용
+async function uploadLogoFile(file: File): Promise<string> {
     const fd = new FormData();
     fd.append("file", file);
 
@@ -86,13 +86,34 @@ async function uploadLogoFile(file: File): Promise<void> {
     if (!res.ok) {
         throw new Error(text || "로고 업로드에 실패했습니다.");
     }
+
+    let data: { url?: string };
+    try {
+        data = JSON.parse(text);
+    } catch {
+        throw new Error("로고 업로드 응답 형식이 올바르지 않습니다.");
+    }
+
+    if (!data.url) {
+        throw new Error("로고 업로드 응답에 url 값이 없습니다.");
+    }
+
+    return data.url; // 예: "/5f0a3b4e-1234-5678-9abc-def012345678.png"
 }
 
 // 2) 신청 JSON 전송: /api/tools/applications
+//    - 첨부 파일이 있으면 먼저 업로드하고, 서버가 돌려준 url로 logo를 교체해서 전송
 async function submitTool(form: ToolForm, file?: File | null): Promise<SubmitResp> {
-    // 첨부 파일이 있으면 먼저 업로드
+    // 최종 전송할 payload
+    let payload: ToolForm = form;
+
+    // 첨부 파일이 있으면 먼저 업로드하고, 응답 url을 logo 에 반영
     if (file) {
-        await uploadLogoFile(file);
+        const logoUrl = await uploadLogoFile(file);
+        payload = {
+            ...form,
+            logo: logoUrl, // ★ DB에 들어갈 logo 값과 실제 저장된 파일명을 일치시키는 핵심 부분
+        };
     }
 
     const res = await fetch("/api/tools/applications", {
@@ -101,7 +122,7 @@ async function submitTool(form: ToolForm, file?: File | null): Promise<SubmitRes
             "Content-Type": "application/json",
         },
         credentials: "include", // 로그인 세션 유지용 (백엔드에서 cookie 사용 시)
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
     });
 
     const text = await res.text();
@@ -165,12 +186,13 @@ export default function SubmitToolPage() {
         fileInputRef.current?.click();
     }
 
-    // 파일 선택 → "/파일명.확장자"로 자동 채움
+    // 파일 선택 → "/파일명.확장자"로 자동 채움 (검증용)
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files?.[0] ?? null;
         if (!f) return;
         setAttachedFile(f);
-        // public 루트에 그대로 저장한다고 가정 → "/파일명.확장자"
+        // 사용자가 첨부하면 일단 "/원래파일명.확장자"로 채워서 validate 통과시킴
+        // 실제 DB에는 submitTool() 내부에서 서버 응답 url(랜덤 이름)으로 교체되어 저장됨
         onChange("logo", `/${f.name}`);
         setErrors((prev) => ({ ...prev, logo: undefined }));
     }
@@ -275,14 +297,20 @@ export default function SubmitToolPage() {
                             </label>
                             <input
                                 className={s.input}
-                                placeholder={attachedFile ? "/파일이름.확장자" : "https://example.com/logo.png"}
+                                placeholder={
+                                    attachedFile ? "/파일이름.확장자" : "https://example.com/logo.png"
+                                }
                                 value={form.logo}
                                 onChange={(e) => {
                                     if (!attachedFile) onChange("logo", e.target.value);
                                 }}
                                 disabled={!!attachedFile}
                                 aria-invalid={!!errors.logo}
-                                title={attachedFile ? "첨부를 취소하면 URL을 수정할 수 있습니다." : ""}
+                                title={
+                                    attachedFile
+                                        ? "첨부를 취소하면 URL을 수정할 수 있습니다."
+                                        : ""
+                                }
                             />
                             {errors.logo && <p className={s.error}>{errors.logo}</p>}
                         </div>
