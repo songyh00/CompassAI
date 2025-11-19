@@ -14,19 +14,26 @@ export default function Login() {
     const [params] = useSearchParams();
     const navigate = useNavigate();
 
-    const [email, setEmail] = useState(params.get("email") ?? "");
+    // URL 쿼리에서 넘어온 email (있으면 우선 사용)
+    const initialEmailFromParam = params.get("email");
+
+    const [email, setEmail] = useState(initialEmailFromParam ?? "");
     const [password, setPassword] = useState("");
     const [showPwd, setShowPwd] = useState(false);
     const [remember, setRemember] = useState(true);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState<LoginErrors>({});
 
+    // 처음 렌더링 시:
+    // - URL에 email 쿼리가 없으면 localStorage에서 한 번만 채워줌
     useEffect(() => {
-        if (!email) {
+        if (!initialEmailFromParam) {
             const saved = localStorage.getItem("compassai_last_email");
-            if (saved) setEmail(saved);
+            if (saved) {
+                setEmail(saved);
+            }
         }
-    }, [email]);
+    }, [initialEmailFromParam]);
 
     const validate = () => {
         const next: LoginErrors = {};

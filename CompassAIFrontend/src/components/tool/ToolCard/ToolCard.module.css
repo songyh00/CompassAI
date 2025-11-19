@@ -45,8 +45,10 @@
 /* 좌측: 로고 박스 */
 .left {
     display: flex;
+    flex-direction: column;   /* 로고 위, 하트 아래 */
     align-items: center;
-    justify-content: center;
+    justify-content: center;  /* 전체 묶음을 세로 가운데 */
+    gap: 6px;                 /* 로고와 하트 사이 간격 */
 }
 .logo {
     width: 54px;
@@ -63,6 +65,20 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+/* 좋아요 버튼 */
+.likeBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    transition: transform .15s ease;
+}
+.likeBtn:hover {
+    transform: scale(1.12);
 }
 
 /* 우측: 텍스트 블록(상/하 2분할) */
@@ -158,8 +174,7 @@
     transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
 }
 
-/* 카드 위에 있을 때만 팝오버 표시
-   - 팝오버에 커서를 올려도 즉시 닫히도록 pointer-events는 계속 none */
+/* 카드 위에 있을 때만 팝오버 표시 */
 .card:hover + .popover {
     opacity: 1;
     visibility: visible;

@@ -28,3 +28,46 @@ export async function postEmpty(path: string): Promise<void> {
     });
     await parse(res);
 }
+
+/* ==============================
+   좋아요 API 유틸
+   ============================== */
+
+export type LikeStatusResponse = {
+    toolId: number;
+    liked: boolean;
+    likeCount: number;
+};
+
+export async function fetchLikeStatus(
+    toolId: number | string
+): Promise<LikeStatusResponse> {
+    return getJSON<LikeStatusResponse>(`/tools/${toolId}/like/status`);
+}
+
+export async function likeTool(
+    toolId: number | string
+): Promise<LikeStatusResponse> {
+    const res = await fetch(`${API_BASE}/tools/${toolId}/like`, {
+        method: "POST",
+        credentials: "include",
+    });
+    return parse<LikeStatusResponse>(res);
+}
+
+export async function unlikeTool(
+    toolId: number | string
+): Promise<LikeStatusResponse> {
+    const res = await fetch(`${API_BASE}/tools/${toolId}/like`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+    return parse<LikeStatusResponse>(res);
+}
+
+export async function toggleToolLike(
+    toolId: number | string,
+    liked: boolean
+): Promise<LikeStatusResponse> {
+    return liked ? unlikeTool(toolId) : likeTool(toolId);
+}

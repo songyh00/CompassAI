@@ -111,3 +111,24 @@ CREATE TABLE IF NOT EXISTS ai_tool_application_category (
                                                                 FOREIGN KEY (category_id)
                                                                     REFERENCES category(id)            ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+/* -----------------------------
+   7) ai_tool_like: 좋아요 N:N
+   ----------------------------- */
+CREATE TABLE IF NOT EXISTS ai_tool_like (
+                                            user_id BIGINT NOT NULL,
+                                            tool_id BIGINT NOT NULL,
+                                            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                                            PRIMARY KEY (user_id, tool_id),
+
+                                            CONSTRAINT fk_like_user
+                                                FOREIGN KEY (user_id)
+                                                    REFERENCES users(id)
+                                                    ON DELETE CASCADE,
+
+                                            CONSTRAINT fk_like_tool
+                                                FOREIGN KEY (tool_id)
+                                                    REFERENCES ai_tool(id)
+                                                    ON DELETE CASCADE
+) ENGINE=InnoDB;
