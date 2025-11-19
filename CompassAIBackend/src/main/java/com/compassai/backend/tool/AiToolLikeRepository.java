@@ -12,4 +12,7 @@ public interface AiToolLikeRepository extends JpaRepository<AiToolLike, AiToolLi
     void deleteByUserIdAndToolId(Long userId, Long toolId);
 
     List<AiToolLike> findByUserId(Long userId);
+
+    // ✅ 내가 좋아요한 툴들을 "좋아요 누른 시간 역순"으로 가져오기
+    List<AiToolLike> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

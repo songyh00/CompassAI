@@ -1,8 +1,11 @@
 // src/pages/Mypage/MyPage.tsx
+import type React from "react";
 import { useEffect, useState } from "react";
 import { me } from "@/api/client";
 import type { Me } from "@/api/client";
 import { postJSON } from "@/api/apiUtils";
+import ToolCard from "@/components/tool/ToolCard/ToolCard";
+import type { Tool } from "@/types/tool";
 import s from "./MyPage.module.css";
 
 type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
@@ -57,9 +60,15 @@ export default function MyPage() {
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPwd, setSavingPwd] = useState(false);
 
+    // 내가 신청한 AI 목록
     const [apps, setApps] = useState<MyToolApplication[]>([]);
     const [appsLoading, setAppsLoading] = useState(false);
     const [appsError, setAppsError] = useState<string | null>(null);
+
+    // 내가 좋아요한 AI 목록
+    const [likedTools, setLikedTools] = useState<Tool[]>([]);
+    const [likedLoading, setLikedLoading] = useState(false);
+    const [likedError, setLikedError] = useState<string | null>(null);
 
     // 현재 로그인 유저 불러오기
     useEffect(() => {
@@ -82,20 +91,18 @@ export default function MyPage() {
         load();
     }, []);
 
-    // 내가 신청한 AI 목록
+    // 내가 신청한 AI 목록 불러오기
     useEffect(() => {
         const fetchApps = async () => {
             setAppsLoading(true);
             setAppsError(null);
             try {
-               const res = await fetch("/api/tools/applications/my-applications", {
-                   credentials: "include",
-               });
+                const res = await fetch("/api/tools/applications/my-applications", {
+                    credentials: "include",
+                });
                 const text = await res.text();
                 if (!res.ok) {
-                    throw new Error(
-                        text || "신청 목록을 불러오지 못했습니다."
-                    );
+                    throw new Error(text || "신청 목록을 불러오지 못했습니다.");
                 }
                 const data: MyToolApplication[] = text ? JSON.parse(text) : [];
                 setApps(data);
@@ -110,6 +117,34 @@ export default function MyPage() {
         };
 
         fetchApps();
+    }, []);
+
+    // 내가 좋아요한 AI 목록 불러오기
+    useEffect(() => {
+        const fetchLiked = async () => {
+            setLikedLoading(true);
+            setLikedError(null);
+            try {
+                const res = await fetch("/api/tools/likes/my", {
+                    credentials: "include",
+                });
+                const text = await res.text();
+                if (!res.ok) {
+                    throw new Error(text || "좋아요한 서비스를 불러오지 못했습니다.");
+                }
+                const data: Tool[] = text ? JSON.parse(text) : [];
+                setLikedTools(data);
+            } catch (e) {
+                console.error(e);
+                setLikedError(
+                    getErrorMessage(e, "좋아요한 서비스를 불러오지 못했습니다.")
+                );
+            } finally {
+                setLikedLoading(false);
+            }
+        };
+
+        fetchLiked();
     }, []);
 
     if (profileLoading) {
@@ -150,7 +185,6 @@ export default function MyPage() {
         setProfileErr({});
         setProfileOk("");
         try {
-            // postJSON("/auth/...") → 실제로는 /api/auth/... 로 호출됨
             const updated = await postJSON("/auth/me", { name, email });
             setProfileOk("회원정보가 수정되었습니다.");
             setUser((prev) =>
@@ -359,11 +393,46 @@ export default function MyPage() {
                     </form>
                 </section>
 
+                {/* 내가 좋아요한 AI 목록 */}
+                <section className={s.card}>
+                    <h2 className={s.sectionTitle}>내가 좋아요한 AI 서비스</h2>
+                    <p className={s.sectionSub}>
+                        좋아요한 AI 도구들을 한눈에 확인할 수 있습니다.
+                    </p>
+
+                    <div className={s.likedArea}>
+                        {likedLoading ? (
+                            <div className={s.centerNotice}>
+                                좋아요한 서비스를 불러오는 중입니다...
+                            </div>
+                        ) : likedError ? (
+                            <div className={s.alert}>{likedError}</div>
+                        ) : likedTools.length === 0 ? (
+                            <div className={s.likedEmpty}>
+                                아직 좋아요한 AI 도구가 없습니다.
+                            </div>
+                        ) : (
+                            <div className={s.likedScroller}>
+                                <div className={s.likedRow}>
+                                    {likedTools.map((tool) => (
+                                        <div
+                                            key={tool.id}
+                                            className={s.likedItem}
+                                        >
+                                            <ToolCard tool={tool} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
                 {/* 내가 신청한 AI 목록 */}
                 <section className={s.card}>
                     <h2 className={s.sectionTitle}>내 AI 검수 신청</h2>
                     <p className={s.sectionSub}>
-                        내가 등록 요청한 AI 도구들의 검수 상태를 확인할 수 있습니다.
+                        내가 등록을 요청한 AI 도구들의 검수 상태를 확인할 수 있습니다.
                     </p>
 
                     {appsError && (
@@ -406,7 +475,9 @@ export default function MyPage() {
                                     <div className={s.appMeta}>
                                         <span>신청일: {app.appliedAt}</span>
                                         {app.processedAt && (
-                                            <span>처리일: {app.processedAt}</span>
+                                            <span>
+                                                처리일: {app.processedAt}
+                                            </span>
                                         )}
                                     </div>
 
