@@ -31,7 +31,11 @@ export default function HelpCenter() {
         const list = cat === "전체" ? FAQS : FAQS.filter((f) => f.cat === cat);
         if (!q.trim()) return list;
         const kw = q.trim().toLowerCase();
-        return list.filter((f) => f.q.toLowerCase().includes(kw) || f.a.toLowerCase().includes(kw));
+        return list.filter(
+            (f) =>
+                f.q.toLowerCase().includes(kw) ||
+                f.a.toLowerCase().includes(kw)
+        );
     }, [cat, q]);
 
     const submitContact = async (e: React.FormEvent) => {
@@ -60,131 +64,186 @@ export default function HelpCenter() {
 
     return (
         <div className={s.wrap}>
+            {/* 페이지 제목 영역 */}
             <div className={s.head}>
                 <h1 className={s.title}>고객센터</h1>
-                <p className={s.sub}>무엇을 도와드릴까요? 아래에서 찾아보거나 문의를 남겨주세요.</p>
-
-                <div className={s.search}>
-                    <input
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        placeholder="키워드로 검색 (예: 로그인, AI 등록, ... )"
-                    />
-                </div>
-
-                <div className={s.tabs}>
-                    <button
-                        className={tab === "faq" ? s.active : ""}
-                        onClick={() => setTab("faq")}
-                    >
-                        자주 묻는 질문
-                    </button>
-                    <button
-                        className={tab === "contact" ? s.active : ""}
-                        onClick={() => setTab("contact")}
-                    >
-                        문의하기
-                    </button>
-                </div>
+                <p className={s.sub}>
+                    무엇을 도와드릴까요? 아래에서 찾아보거나 문의를 남겨주세요.
+                </p>
             </div>
 
-            {tab === "faq" ? (
-                <section className={s.section}>
-                    <div className={s.cats}>
-                        {CATS.map((c) => (
-                            <button
-                                key={c}
-                                className={`${s.cat} ${cat === c ? s.catActive : ""}`}
-                                onClick={() => setCat(c)}
-                            >
-                                {c}
-                            </button>
-                        ))}
+            {/* ★ 제목 아래 사각형 카드 영역 */}
+            <div className={s.panel}>
+                {/* 상단: 검색 + 탭 */}
+                <div className={s.panelTop}>
+                    <div className={s.search}>
+                        <input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="키워드로 검색 (예: 로그인, AI 등록, ... )"
+                        />
                     </div>
 
-                    <ul className={s.faq}>
-                        {filtered.map((item) => (
-                            <FaqItem
-                                key={item.id}
-                                q={item.q}
-                                a={item.a}
-                                open={openId === item.id}
-                                onToggle={() => setOpenId(openId === item.id ? null : item.id)}
-                            />
-                        ))}
-                        {filtered.length === 0 && (
-                            <li className={s.item} style={{ padding: 14, textAlign: "center" }}>
-                                검색 결과가 없습니다.
-                            </li>
-                        )}
-                    </ul>
-                </section>
-            ) : (
-                <section className={s.section}>
-                    {notice && <div className={s.notice}>{notice}</div>}
+                    <div className={s.tabs}>
+                        <button
+                            className={tab === "faq" ? s.active : ""}
+                            onClick={() => setTab("faq")}
+                        >
+                            자주 묻는 질문
+                        </button>
+                        <button
+                            className={tab === "contact" ? s.active : ""}
+                            onClick={() => setTab("contact")}
+                        >
+                            문의하기
+                        </button>
+                    </div>
+                </div>
 
-                    <form className={s.form} onSubmit={submitContact} noValidate>
-                        <label className={s.field}>
-                            <span>이메일</span>
-                            <input
-                                type="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={err.email ? s.invalid : ""}
-                            />
-                            {err.email && <em className={s.error}>{err.email}</em>}
-                        </label>
-
-                        <label className={s.field}>
-                            <span>문의 유형</span>
-                            <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-                                <option>일반 문의</option>
-                                <option>계정/로그인</option>
-                                <option>AI 등록/검수</option>
-                                <option>버그/기술 이슈</option>
-                                <option>제안/피드백</option>
-                            </select>
-                        </label>
-
-                        <label className={s.field}>
-                            <span>제목</span>
-                            <input
-                                placeholder="문의 제목"
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
-                                className={err.subject ? s.invalid : ""}
-                            />
-                            {err.subject && <em className={s.error}>{err.subject}</em>}
-                        </label>
-
-                        <label className={s.field}>
-                            <span>내용</span>
-                            <textarea
-                                placeholder="자세한 증상/재현 절차/스크린샷 링크 등을 적어주세요."
-                                value={msg}
-                                onChange={(e) => setMsg(e.target.value)}
-                                rows={6}
-                                className={err.msg ? s.invalid : ""}
-                            />
-                            {err.msg && <em className={s.error}>{err.msg}</em>}
-                        </label>
-
-                        <div className={s.actions}>
-                            <button type="submit" className={s.submit} disabled={loading}>
-                                {loading ? "전송 중..." : "문의 보내기"}
-                            </button>
-                            <span className={s.fyi}>평균 1영업일 이내 회신드립니다.</span>
+                {/* 하단: FAQ / 문의 폼 */}
+                {tab === "faq" ? (
+                    <section className={s.section}>
+                        <div className={s.cats}>
+                            {CATS.map((c) => (
+                                <button
+                                    key={c}
+                                    className={`${s.cat} ${
+                                        cat === c ? s.catActive : ""
+                                    }`}
+                                    onClick={() => setCat(c)}
+                                >
+                                    {c}
+                                </button>
+                            ))}
                         </div>
-                    </form>
-                </section>
-            )}
+
+                        <ul className={s.faq}>
+                            {filtered.map((item) => (
+                                <FaqItem
+                                    key={item.id}
+                                    q={item.q}
+                                    a={item.a}
+                                    open={openId === item.id}
+                                    onToggle={() =>
+                                        setOpenId(
+                                            openId === item.id ? null : item.id
+                                        )
+                                    }
+                                />
+                            ))}
+                            {filtered.length === 0 && (
+                                <li
+                                    className={s.item}
+                                    style={{
+                                        padding: 14,
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    검색 결과가 없습니다.
+                                </li>
+                            )}
+                        </ul>
+                    </section>
+                ) : (
+                    <section className={s.section}>
+                        {notice && <div className={s.notice}>{notice}</div>}
+
+                        <form
+                            className={s.form}
+                            onSubmit={submitContact}
+                            noValidate
+                        >
+                            <label className={s.field}>
+                                <span>이메일</span>
+                                <input
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={err.email ? s.invalid : ""}
+                                />
+                                {err.email && (
+                                    <em className={s.error}>{err.email}</em>
+                                )}
+                            </label>
+
+                            <label className={s.field}>
+                                <span>문의 유형</span>
+                                <select
+                                    value={topic}
+                                    onChange={(e) =>
+                                        setTopic(e.target.value)
+                                    }
+                                >
+                                    <option>일반 문의</option>
+                                    <option>계정/로그인</option>
+                                    <option>AI 등록/검수</option>
+                                    <option>버그/기술 이슈</option>
+                                    <option>제안/피드백</option>
+                                </select>
+                            </label>
+
+                            <label className={s.field}>
+                                <span>제목</span>
+                                <input
+                                    placeholder="문의 제목"
+                                    value={subject}
+                                    onChange={(e) =>
+                                        setSubject(e.target.value)
+                                    }
+                                    className={err.subject ? s.invalid : ""}
+                                />
+                                {err.subject && (
+                                    <em className={s.error}>
+                                        {err.subject}
+                                    </em>
+                                )}
+                            </label>
+
+                            <label className={s.field}>
+                                <span>내용</span>
+                                <textarea
+                                    placeholder="자세한 증상/재현 절차/스크린샷 링크 등을 적어주세요."
+                                    value={msg}
+                                    onChange={(e) => setMsg(e.target.value)}
+                                    rows={6}
+                                    className={err.msg ? s.invalid : ""}
+                                />
+                                {err.msg && (
+                                    <em className={s.error}>{err.msg}</em>
+                                )}
+                            </label>
+
+                            <div className={s.actions}>
+                                <button
+                                    type="submit"
+                                    className={s.submit}
+                                    disabled={loading}
+                                >
+                                    {loading ? "전송 중..." : "문의 보내기"}
+                                </button>
+                                <span className={s.fyi}>
+                                    평균 1영업일 이내 회신드립니다.
+                                </span>
+                            </div>
+                        </form>
+                    </section>
+                )}
+            </div>
         </div>
     );
 }
 
-function FaqItem({ q, a, open, onToggle }: {
-    q: string; a: string; open: boolean; onToggle: () => void;
+function FaqItem({
+                     q,
+                     a,
+                     open,
+                     onToggle,
+                 }: {
+    q: string;
+    a: string;
+    open: boolean;
+    onToggle: () => void;
 }) {
     return (
         <li className={`${s.item} ${open ? s.itemOpen : ""}`}>
@@ -200,4 +259,3 @@ function FaqItem({ q, a, open, onToggle }: {
         </li>
     );
 }
-

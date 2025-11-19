@@ -4,9 +4,27 @@
 
 /* 레이아웃 */
 .wrap { max-width: 980px; margin: 0 auto; padding: 28px 16px 40px; }
-.head { text-align: center; margin-bottom: 18px; }
-.title { margin: 0 0 8px; font-size: 28px; font-weight: 800; color: #111; }
-.sub { margin: 0 0 14px; color: #666; font-size: 14px; }
+.head { text-align: left; margin-bottom: 12px; }
+.title { margin: 0 0 4px; font-size: 28px; font-weight: 800; color: #111; }
+.sub { margin: 0; color: #666; font-size: 14px; }
+
+/* ★ 제목 아래 전체 내용을 감싸는 카드 영역 */
+.panel {
+    margin-top: 14px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 18px 16px 20px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.04);
+}
+
+/* 패널 상단: 검색 + 탭 묶음 */
+.panelTop {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
 
 /* 검색 */
 .search { display: flex; justify-content: center; }
@@ -17,7 +35,7 @@
 .search input:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
 
 /* 탭 */
-.tabs { margin-top: 14px; display: flex; gap: 8px; justify-content: center; }
+.tabs { margin-top: 4px; display: flex; gap: 8px; justify-content: center; }
 .tabs button {
     height: 36px; padding: 0 14px; border: 1px solid #e5e7eb; border-radius: 18px;
     background: #fff; color: #111; cursor: pointer; transition: background .15s,color .15s,box-shadow .15s;
@@ -26,7 +44,7 @@
 .tabs button.active { background: #111; color: #fff; border-color: #111; }
 .tabs button.active:hover { background: #fff; color: #111; border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.06); }
 
-.section { margin-top: 18px; }
+.section { margin-top: 6px; }
 
 /* 카테고리 칩 */
 .cats { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 12px; }

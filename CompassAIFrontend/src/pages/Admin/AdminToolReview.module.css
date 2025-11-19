@@ -28,13 +28,13 @@
     font-size: 14px;
 }
 
-/* 등록 페이지처럼 모든 내용을 감싸는 카드 */
 .card {
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     padding: 24px 20px;
     box-shadow: 0 10px 24px rgba(0, 0, 0, .04);
+    min-height: 580px;
 }
 
 /* 검색 */
