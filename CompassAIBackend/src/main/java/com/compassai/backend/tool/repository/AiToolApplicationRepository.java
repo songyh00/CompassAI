@@ -23,4 +23,7 @@ public interface AiToolApplicationRepository extends JpaRepository<AiToolApplica
         order by a.appliedAt desc
         """)
     List<AiToolApplication> findAllWithApplicantAndCategories();
+
+    // 로그인한 유저의 신청 목록 (최근 신청 순)
+    List<AiToolApplication> findByApplicantIdOrderByAppliedAtDesc(Long userId);
 }

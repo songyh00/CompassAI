@@ -1,0 +1,292 @@
+.wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+}
+
+.inner {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .04);
+}
+
+.title {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #111;
+}
+
+.sub {
+    margin: 0 0 14px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.sectionTitle {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+}
+
+.sectionSub {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.form {
+    margin-top: 6px;
+}
+
+.field {
+    margin-top: 14px;
+}
+
+.label {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #111;
+}
+
+.input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    font-size: 15px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.input:focus {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+}
+
+.readonly {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 15px;
+    background: #f9fafb;
+    border-radius: 10px;
+    color: #4b5563;
+}
+
+.invalid {
+    border-color: #ef4444;
+}
+
+.error {
+    display: block;
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.alert {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.notice {
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.primaryBtn,
+.secondaryBtn {
+    width: 100%;
+    height: 44px;
+    margin-top: 18px;
+    border-radius: 10px;
+    border: 1px solid #111;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, color .15s, box-shadow .15s, transform .02s;
+}
+
+.primaryBtn {
+    background: #111;
+    color: #fff;
+}
+
+.primaryBtn:hover:not(:disabled) {
+    background: #fff;
+    color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+}
+
+.secondaryBtn {
+    background: #fff;
+    color: #111;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+    background: #111;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+}
+
+.primaryBtn:disabled,
+.secondaryBtn:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+.centerNotice {
+    text-align: center;
+    font-size: 14px;
+    color: #6b7280;
+    padding: 16px 0;
+}
+
+/* 내 AI 신청 리스트 */
+
+.appList {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: grid;
+    gap: 8px;
+}
+
+.appItem {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 12px 10px;
+    background: #f9fafb;
+}
+
+.appHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.appTitleBox {
+    min-width: 0;
+}
+
+.appName {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+    word-break: break-all;
+}
+
+.appSubTitle {
+    margin-top: 3px;
+    font-size: 13px;
+    color: #4b5563;
+    word-break: break-all;
+}
+
+.appBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    font-size: 11px;
+    color: #374151;
+}
+
+.statusPending {
+    background: #fefce8;
+    border-color: #facc15;
+    color: #854d0e;
+}
+
+.statusApproved {
+    background: #ecfdf5;
+    border-color: #34d399;
+    color: #166534;
+}
+
+.statusRejected {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.appMeta {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.appRow {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.appLabel {
+    min-width: 64px;
+    font-weight: 600;
+    color: #111;
+}
+
+.appValue {
+    flex: 1;
+    color: #374151;
+}
+
+.appLink {
+    color: #111;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.appLink:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+    .card {
+        padding: 20px 16px;
+    }
+    .title {
+        font-size: 24px;
+    }
+}

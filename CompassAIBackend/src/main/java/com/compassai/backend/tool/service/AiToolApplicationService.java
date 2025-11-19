@@ -212,4 +212,39 @@ public class AiToolApplicationService {
             // finalTool 은 영속 상태이므로, 트랜잭션 커밋 시 자동으로 ai_tool_category에 반영됨
         }
     }
+    @Transactional(readOnly = true)
+    public List<ToolApplicationResponse> getMyApplications(Long userId) {
+        List<AiToolApplication> apps =
+                applicationRepository.findByApplicantIdOrderByAppliedAtDesc(userId);
+
+        return apps.stream()
+                .map(app -> {
+                    User applicant = app.getApplicant();
+
+                    List<String> categoryNames = app.getCategories().stream()
+                            .map(link -> link.getCategory().getName())
+                            .toList();
+
+                    return new ToolApplicationResponse(
+                            app.getId(),
+                            app.getName(),
+                            app.getSubTitle(),
+                            app.getOrigin(),
+                            app.getUrl(),
+                            app.getLogo(),
+                            app.getDescription(),
+                            app.getStatus().name(),
+                            app.getAppliedAt(),
+                            app.getProcessedAt(),
+                            app.getRejectReason(),
+                            new ToolApplicationResponse.ApplicantDto(
+                                    applicant.getId(),
+                                    applicant.getName(),
+                                    applicant.getEmail()
+                            ),
+                            categoryNames
+                    );
+                })
+                .toList();
+    }
 }
