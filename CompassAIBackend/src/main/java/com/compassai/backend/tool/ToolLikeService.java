@@ -4,6 +4,7 @@ import com.compassai.backend.tool.domain.AiTool;
 import com.compassai.backend.tool.domain.Category;
 import com.compassai.backend.tool.dto.AiToolResponse;
 import com.compassai.backend.tool.dto.LikeStatusResponse;
+import com.compassai.backend.tool.repository.AiToolLikeRepository;
 import com.compassai.backend.tool.repository.AiToolRepository;
 import java.util.ArrayList;
 import java.util.List;

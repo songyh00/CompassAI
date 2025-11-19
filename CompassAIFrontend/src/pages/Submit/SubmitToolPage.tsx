@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import s from "./SubmitToolPage.module.css";
 
 /* 선택 항목 */
@@ -70,8 +71,6 @@ function validate(form: ToolForm): Errors {
 type SubmitResp = { applicationId: number };
 
 // 1) 로고 파일을 백엔드로 업로드 후, 최종 url 반환
-//    - 백엔드는 CompassAIFrontend/public 에 랜덤 파일명(UUID)으로 저장
-//    - 응답의 {"url": "/랜덤이름.png"} 를 그대로 DB에 넣을 logo 로 사용
 async function uploadLogoFile(file: File): Promise<string> {
     const fd = new FormData();
     fd.append("file", file);
@@ -102,17 +101,14 @@ async function uploadLogoFile(file: File): Promise<string> {
 }
 
 // 2) 신청 JSON 전송: /api/tools/applications
-//    - 첨부 파일이 있으면 먼저 업로드하고, 서버가 돌려준 url로 logo를 교체해서 전송
 async function submitTool(form: ToolForm, file?: File | null): Promise<SubmitResp> {
-    // 최종 전송할 payload
     let payload: ToolForm = form;
 
-    // 첨부 파일이 있으면 먼저 업로드하고, 응답 url을 logo 에 반영
     if (file) {
         const logoUrl = await uploadLogoFile(file);
         payload = {
             ...form,
-            logo: logoUrl, // ★ DB에 들어갈 logo 값과 실제 저장된 파일명을 일치시키는 핵심 부분
+            logo: logoUrl,
         };
     }
 
@@ -121,17 +117,15 @@ async function submitTool(form: ToolForm, file?: File | null): Promise<SubmitRes
         headers: {
             "Content-Type": "application/json",
         },
-        credentials: "include", // 로그인 세션 유지용 (백엔드에서 cookie 사용 시)
+        credentials: "include",
         body: JSON.stringify(payload),
     });
 
     const text = await res.text();
     if (!res.ok) {
-        // 백엔드에서 에러 메시지 내려주면 그걸 쓰고, 없으면 기본 문구
         throw new Error(text || "신청 처리 중 오류가 발생했습니다.");
     }
 
-    // {"applicationId": 1} 같은 응답이라고 가정
     return text ? (JSON.parse(text) as SubmitResp) : { applicationId: -1 };
 }
 
@@ -147,6 +141,9 @@ export default function SubmitToolPage() {
     const [attachedFile, setAttachedFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // 🔹 페이지 이동 훅
+    const navigate = useNavigate();
+
     const onChange = <K extends keyof ToolForm>(k: K, v: ToolForm[K]) =>
         setForm((p) => ({ ...p, [k]: v }));
 
@@ -161,7 +158,6 @@ export default function SubmitToolPage() {
         try {
             const res = await submitTool(form, attachedFile);
 
-            // 실제로 전송한 form 기준으로 미리보기
             setPreview(form);
 
             if (res.applicationId && res.applicationId > 0) {
@@ -169,6 +165,10 @@ export default function SubmitToolPage() {
             } else {
                 setOkMessage("등록 요청이 제출되었습니다. 검토 후 반영됩니다.");
             }
+
+            // ✅ 등록 성공 후 마이페이지로 이동
+            // 실제 경로가 다르면 "/mypage" 부분만 수정
+            navigate("/mypage");
         } catch (err) {
             console.error(err);
             alert(
@@ -186,13 +186,11 @@ export default function SubmitToolPage() {
         fileInputRef.current?.click();
     }
 
-    // 파일 선택 → "/파일명.확장자"로 자동 채움 (검증용)
+    // 파일 선택 → "/파일명.확장자"로 자동 채움
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files?.[0] ?? null;
         if (!f) return;
         setAttachedFile(f);
-        // 사용자가 첨부하면 일단 "/원래파일명.확장자"로 채워서 validate 통과시킴
-        // 실제 DB에는 submitTool() 내부에서 서버 응답 url(랜덤 이름)으로 교체되어 저장됨
         onChange("logo", `/${f.name}`);
         setErrors((prev) => ({ ...prev, logo: undefined }));
     }

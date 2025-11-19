@@ -20,7 +20,7 @@
 
 .title {
     margin: 0 0 6px;
-    font-size: 28px;
+    font-size: 18px;
     font-weight: 800;
     color: #111;
 }
@@ -290,7 +290,12 @@
         font-size: 24px;
     }
 }
-/* 좋아요 영역 전체 박스 - 카드 안에서 항상 같은 가로폭 유지 */
+
+/* ===========================
+   좋아요한 AI 카드 영역
+   =========================== */
+
+/* 좋아요 영역 전체 박스 */
 .likedArea {
     margin-top: 10px;
     padding: 12px 8px 16px;
@@ -300,7 +305,7 @@
     max-width: 100%;
 }
 
-/* 좋아요가 없거나 로딩 중일 때도 일정 가로/세로 유지 */
+/* 좋아요가 없거나 로딩 중일 때 */
 .likedEmpty {
     min-height: 160px;
     border-radius: 12px;
@@ -321,7 +326,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 4px;
-    max-width: 100%;      /* 화면 밖으로 안 나가게 */
+    max-width: 100%;
 }
 
 /* 스크롤바 커스터마이즈 */
@@ -336,23 +341,24 @@
     border-radius: 999px;
 }
 
-/* 실제 카드 줄 */
+/* 카드가 들어가는 줄 – flex 전용 */
 .likedRow {
-    display: inline-flex; /* 내용 너비만큼 + min-width */
-    flex-wrap: nowrap;
-    gap: 12px;
-    min-width: 100%;      /* 카드가 1~2개여도 가로폭 유지 */
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;       /* 줄바꿈 없이 가로로만 배치 */
+    align-items: stretch;
+    gap: 16px;               /* 카드 사이 여백 */
+    padding: 0 4px;
 }
 
-/* 개별 ToolCard 래퍼 */
+/* 개별 ToolCard 래퍼 – 폭 고정, 줄어들지 않게 */
 .likedItem {
-    flex: 0 0 280px;      /* 카드 기본 폭 */
-    max-width: 280px;
+    flex: 0 0 auto;          /* 줄어들지 않게 */
+    width: 280px;            /* 카드 고정 너비 */
 }
 
 @media (max-width: 640px) {
     .likedItem {
-        flex-basis: 240px;
-        max-width: 240px;
+        width: 240px;        /* 모바일에서 조금 좁게 */
     }
 }

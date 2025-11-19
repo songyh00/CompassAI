@@ -14,12 +14,16 @@ type ToolPlus = Tool & {
     subTitle?: string;
 };
 
-type Props = { tool: ToolPlus };
+/** ★ 팝오버 끄기 옵션 추가 */
+type Props = {
+    tool: ToolPlus;
+    disablePopover?: boolean;
+};
 
 /**
  * ToolCard 컴포넌트
  */
-export default function ToolCard({ tool }: Props) {
+export default function ToolCard({ tool, disablePopover = false }: Props) {
     /** 로고 이미지 후보 경로 (우선순위 순으로 시도) */
     const candidates = useMemo(() => {
         const name = tool.name.trim();
@@ -66,7 +70,12 @@ export default function ToolCard({ tool }: Props) {
     return (
         <div className={s.wrap}>
             {/* 기본 카드 */}
-            <a className={s.card} href={tool.url || "#"} target="_blank" rel="noreferrer">
+            <a
+                className={s.card}
+                href={tool.url || "#"}
+                target="_blank"
+                rel="noreferrer"
+            >
                 <div className={s.inner}>
                     {/* 왼쪽: 로고 + 좋아요 */}
                     <div className={s.left}>
@@ -105,7 +114,9 @@ export default function ToolCard({ tool }: Props) {
                         <div className={s.rightTop}>
                             <h3 className={s.title}>
                                 <span className={s.titleKo}>{koName}</span>
-                                {enName && <span className={s.titleEn}>({enName})</span>}
+                                {enName && (
+                                    <span className={s.titleEn}>({enName})</span>
+                                )}
                             </h3>
                         </div>
 
@@ -116,42 +127,50 @@ export default function ToolCard({ tool }: Props) {
                 </div>
             </a>
 
-            {/* 팝오버 */}
-            <div className={s.popover} role="dialog" aria-hidden="true">
-                <div className={s.popHead}>
-                    <div className={s.popLogo}>{src && <img src={src} alt="" />}</div>
-
-                    <div className={s.popTitleBox}>
-                        <div className={s.popTitle}>
-                            {koName}
-                            {enName && <span className={s.popEn}>({enName})</span>}
+            {/* ★ 팝오버: disablePopover 가 false일 때만 렌더 */}
+            {!disablePopover && (
+                <div className={s.popover} role="dialog" aria-hidden="true">
+                    <div className={s.popHead}>
+                        <div className={s.popLogo}>
+                            {src && <img src={src} alt="" />}
                         </div>
-                        {platform && <div className={s.popSub}>{platform}</div>}
+
+                        <div className={s.popTitleBox}>
+                            <div className={s.popTitle}>
+                                {koName}
+                                {enName && (
+                                    <span className={s.popEn}>({enName})</span>
+                                )}
+                            </div>
+                            {platform && (
+                                <div className={s.popSub}>{platform}</div>
+                            )}
+                        </div>
+
+                        {origin && (
+                            <span
+                                className={`${s.badge} ${
+                                    origin === "국내" ? s.badgeKr : s.badgeGl
+                                }`}
+                            >
+                                {origin}
+                            </span>
+                        )}
                     </div>
 
-                    {origin && (
-                        <span
-                            className={`${s.badge} ${
-                                origin === "국내" ? s.badgeKr : s.badgeGl
-                            }`}
-                        >
-                            {origin}
-                        </span>
+                    {long && <div className={s.popBody}>{long}</div>}
+
+                    {tags.length > 0 && (
+                        <div className={s.tags}>
+                            {tags.map((t) => (
+                                <span key={t} className={s.tag}>
+                                    #{t}
+                                </span>
+                            ))}
+                        </div>
                     )}
                 </div>
-
-                {long && <div className={s.popBody}>{long}</div>}
-
-                {tags.length > 0 && (
-                    <div className={s.tags}>
-                        {tags.map((t) => (
-                            <span key={t} className={s.tag}>
-                                #{t}
-                            </span>
-                        ))}
-                    </div>
-                )}
-            </div>
+            )}
         </div>
     );
 }

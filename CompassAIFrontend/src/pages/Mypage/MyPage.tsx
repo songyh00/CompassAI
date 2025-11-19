@@ -6,6 +6,9 @@ import type { Me } from "@/api/client";
 import { postJSON } from "@/api/apiUtils";
 import ToolCard from "@/components/tool/ToolCard/ToolCard";
 import type { Tool } from "@/types/tool";
+
+// 사진1 레이아웃 재사용 (제목 가운데 + 고정 폭)
+import layout from "../Submit/SubmitToolPage.module.css";
 import s from "./MyPage.module.css";
 
 type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
@@ -147,19 +150,31 @@ export default function MyPage() {
         fetchLiked();
     }, []);
 
+    // 로딩 상태
     if (profileLoading) {
         return (
-            <div className={s.wrap}>
-                <div className={s.centerNotice}>내 정보를 불러오는 중입니다...</div>
+            <div className={layout["submit-wrap"]}>
+                <div className={layout["submit-container"]}>
+                    <header className={layout["submit-header"]}>
+                        <h1 className={layout["submit-title"]}>마이페이지</h1>
+                    </header>
+                    <div className={s.centerNotice}>내 정보를 불러오는 중입니다...</div>
+                </div>
             </div>
         );
     }
 
+    // 비로그인 상태
     if (!user) {
         return (
-            <div className={s.wrap}>
-                <div className={s.centerNotice}>
-                    로그인 후 이용할 수 있는 페이지입니다.
+            <div className={layout["submit-wrap"]}>
+                <div className={layout["submit-container"]}>
+                    <header className={layout["submit-header"]}>
+                        <h1 className={layout["submit-title"]}>마이페이지</h1>
+                    </header>
+                    <div className={s.centerNotice}>
+                        로그인 후 이용할 수 있는 페이지입니다.
+                    </div>
                 </div>
             </div>
         );
@@ -185,15 +200,20 @@ export default function MyPage() {
         setProfileErr({});
         setProfileOk("");
         try {
-            const updated = await postJSON("/auth/me", { name, email });
+            // TS18046 해결: postJSON 반환 타입 지정
+            const updated = await postJSON<{
+                name?: string;
+                email?: string;
+            }>("/auth/me", { name, email });
+
             setProfileOk("회원정보가 수정되었습니다.");
             setUser((prev) =>
                 prev
                     ? {
-                          ...prev,
-                          name: updated.name ?? name,
-                          email: updated.email ?? email,
-                      }
+                        ...prev,
+                        name: updated.name ?? name,
+                        email: updated.email ?? email,
+                    }
                     : prev
             );
             window.dispatchEvent(new Event("auth:changed"));
@@ -253,285 +273,290 @@ export default function MyPage() {
     };
 
     return (
-        <div className={s.wrap}>
-            <div className={s.inner}>
-                {/* 회원정보 수정 */}
-                <section className={s.card}>
-                    <h1 className={s.title}>마이페이지</h1>
-                    <p className={s.sub}>
-                        가입 정보를 확인하고 수정할 수 있습니다.
-                    </p>
+        <div className={layout["submit-wrap"]}>
+            <div className={layout["submit-container"]}>
+                <header className={layout["submit-header"]}>
+                    {/* 사진1처럼 가운데 검정 글씨 제목 */}
+                    <h1 className={layout["submit-title"]}>마이페이지</h1>
+                </header>
 
-                    <form className={s.form} onSubmit={onSaveProfile} noValidate>
-                        {profileErr.root && (
-                            <div className={s.alert}>{profileErr.root}</div>
-                        )}
-                        {profileOk && (
-                            <div className={s.notice}>{profileOk}</div>
-                        )}
+                <div className={s.inner}>
+                    {/* 회원정보 수정 */}
+                    <section className={s.card}>
+                        <h1 className={s.title}>내 정보 수정</h1>
+                        <p className={s.sub}>
+                            가입 정보를 확인하고 수정할 수 있습니다.
+                        </p>
 
-                        <div className={s.field}>
-                            <label className={s.label}>이름</label>
-                            <input
-                                className={`${s.input} ${
-                                    profileErr.name ? s.invalid : ""
-                                }`}
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                            />
-                            {profileErr.name && (
-                                <span className={s.error}>
-                                    {profileErr.name}
-                                </span>
+                        <form className={s.form} onSubmit={onSaveProfile} noValidate>
+                            {profileErr.root && (
+                                <div className={s.alert}>{profileErr.root}</div>
                             )}
-                        </div>
-
-                        <div className={s.field}>
-                            <label className={s.label}>이메일</label>
-                            <input
-                                type="email"
-                                className={`${s.input} ${
-                                    profileErr.email ? s.invalid : ""
-                                }`}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                            {profileErr.email && (
-                                <span className={s.error}>
-                                    {profileErr.email}
-                                </span>
+                            {profileOk && (
+                                <div className={s.notice}>{profileOk}</div>
                             )}
-                        </div>
 
-                        <button
-                            type="submit"
-                            className={s.primaryBtn}
-                            disabled={savingProfile}
-                        >
-                            {savingProfile ? "저장 중..." : "회원정보 저장"}
-                        </button>
-                    </form>
-                </section>
-
-                {/* 비밀번호 변경 */}
-                <section className={s.card}>
-                    <h2 className={s.sectionTitle}>비밀번호 변경</h2>
-                    <form
-                        className={s.form}
-                        onSubmit={onChangePassword}
-                        noValidate
-                    >
-                        {pwdErr.root && (
-                            <div className={s.alert}>{pwdErr.root}</div>
-                        )}
-                        {pwdOk && <div className={s.notice}>{pwdOk}</div>}
-
-                        <div className={s.field}>
-                            <label className={s.label}>현재 비밀번호</label>
-                            <input
-                                type="password"
-                                className={`${s.input} ${
-                                    pwdErr.currentPassword ? s.invalid : ""
-                                }`}
-                                value={currentPassword}
-                                onChange={(e) =>
-                                    setCurrentPassword(e.target.value)
-                                }
-                            />
-                            {pwdErr.currentPassword && (
-                                <span className={s.error}>
-                                    {pwdErr.currentPassword}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className={s.field}>
-                            <label className={s.label}>새 비밀번호</label>
-                            <input
-                                type="password"
-                                className={`${s.input} ${
-                                    pwdErr.newPassword ? s.invalid : ""
-                                }`}
-                                value={newPassword}
-                                onChange={(e) =>
-                                    setNewPassword(e.target.value)
-                                }
-                            />
-                            {pwdErr.newPassword && (
-                                <span className={s.error}>
-                                    {pwdErr.newPassword}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className={s.field}>
-                            <label className={s.label}>새 비밀번호 확인</label>
-                            <input
-                                type="password"
-                                className={`${s.input} ${
-                                    pwdErr.confirm ? s.invalid : ""
-                                }`}
-                                value={confirmPassword}
-                                onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
-                                }
-                            />
-                            {pwdErr.confirm && (
-                                <span className={s.error}>
-                                    {pwdErr.confirm}
-                                </span>
-                            )}
-                        </div>
-
-                        <button
-                            type="submit"
-                            className={s.secondaryBtn}
-                            disabled={savingPwd}
-                        >
-                            {savingPwd ? "변경 중..." : "비밀번호 변경"}
-                        </button>
-                    </form>
-                </section>
-
-                {/* 내가 좋아요한 AI 목록 */}
-                <section className={s.card}>
-                    <h2 className={s.sectionTitle}>내가 좋아요한 AI 서비스</h2>
-                    <p className={s.sectionSub}>
-                        좋아요한 AI 도구들을 한눈에 확인할 수 있습니다.
-                    </p>
-
-                    <div className={s.likedArea}>
-                        {likedLoading ? (
-                            <div className={s.centerNotice}>
-                                좋아요한 서비스를 불러오는 중입니다...
+                            <div className={s.field}>
+                                <label className={s.label}>이름</label>
+                                <input
+                                    className={`${s.input} ${
+                                        profileErr.name ? s.invalid : ""
+                                    }`}
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                                {profileErr.name && (
+                                    <span className={s.error}>
+                                        {profileErr.name}
+                                    </span>
+                                )}
                             </div>
-                        ) : likedError ? (
-                            <div className={s.alert}>{likedError}</div>
-                        ) : likedTools.length === 0 ? (
-                            <div className={s.likedEmpty}>
-                                아직 좋아요한 AI 도구가 없습니다.
+
+                            <div className={s.field}>
+                                <label className={s.label}>이메일</label>
+                                <input
+                                    type="email"
+                                    className={`${s.input} ${
+                                        profileErr.email ? s.invalid : ""
+                                    }`}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                                {profileErr.email && (
+                                    <span className={s.error}>
+                                        {profileErr.email}
+                                    </span>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={s.primaryBtn}
+                                disabled={savingProfile}
+                            >
+                                {savingProfile ? "저장 중..." : "회원정보 저장"}
+                            </button>
+                        </form>
+                    </section>
+
+                    {/* 비밀번호 변경 */}
+                    <section className={s.card}>
+                        <h2 className={s.sectionTitle}>비밀번호 변경</h2>
+                        <form
+                            className={s.form}
+                            onSubmit={onChangePassword}
+                            noValidate
+                        >
+                            {pwdErr.root && (
+                                <div className={s.alert}>{pwdErr.root}</div>
+                            )}
+                            {pwdOk && <div className={s.notice}>{pwdOk}</div>}
+
+                            <div className={s.field}>
+                                <label className={s.label}>현재 비밀번호</label>
+                                <input
+                                    type="password"
+                                    className={`${s.input} ${
+                                        pwdErr.currentPassword ? s.invalid : ""
+                                    }`}
+                                    value={currentPassword}
+                                    onChange={(e) =>
+                                        setCurrentPassword(e.target.value)
+                                    }
+                                />
+                                {pwdErr.currentPassword && (
+                                    <span className={s.error}>
+                                        {pwdErr.currentPassword}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className={s.field}>
+                                <label className={s.label}>새 비밀번호</label>
+                                <input
+                                    type="password"
+                                    className={`${s.input} ${
+                                        pwdErr.newPassword ? s.invalid : ""
+                                    }`}
+                                    value={newPassword}
+                                    onChange={(e) =>
+                                        setNewPassword(e.target.value)
+                                    }
+                                />
+                                {pwdErr.newPassword && (
+                                    <span className={s.error}>
+                                        {pwdErr.newPassword}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className={s.field}>
+                                <label className={s.label}>새 비밀번호 확인</label>
+                                <input
+                                    type="password"
+                                    className={`${s.input} ${
+                                        pwdErr.confirm ? s.invalid : ""
+                                    }`}
+                                    value={confirmPassword}
+                                    onChange={(e) =>
+                                        setConfirmPassword(e.target.value)
+                                    }
+                                />
+                                {pwdErr.confirm && (
+                                    <span className={s.error}>
+                                        {pwdErr.confirm}
+                                    </span>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={s.secondaryBtn}
+                                disabled={savingPwd}
+                            >
+                                {savingPwd ? "변경 중..." : "비밀번호 변경"}
+                            </button>
+                        </form>
+                    </section>
+
+                    {/* 내가 좋아요한 AI 목록 */}
+                    <section className={s.card}>
+                        <h2 className={s.sectionTitle}>내가 좋아요한 AI 서비스</h2>
+                        <p className={s.sectionSub}>
+                            좋아요한 AI 도구들을 한눈에 확인할 수 있습니다.
+                        </p>
+
+                        <div className={s.likedArea}>
+                            {likedLoading ? (
+                                <div className={s.centerNotice}>
+                                    좋아요한 서비스를 불러오는 중입니다...
+                                </div>
+                            ) : likedError ? (
+                                <div className={s.alert}>{likedError}</div>
+                            ) : likedTools.length === 0 ? (
+                                <div className={s.likedEmpty}>
+                                    아직 좋아요한 AI 도구가 없습니다.
+                                </div>
+                            ) : (
+                                <div className={s.likedScroller}>
+                                    <div className={s.likedRow}>
+                                        {likedTools.map((tool) => (
+                                            <div key={tool.id} className={s.likedItem}>
+                                                {/* ★ 팝오버 끔 */}
+                                                <ToolCard tool={tool} disablePopover />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* 내가 신청한 AI 목록 */}
+                    <section className={s.card}>
+                        <h2 className={s.sectionTitle}>내가 신청한 AI 서비스</h2>
+                        <p className={s.sectionSub}>
+                            내가 등록을 요청한 AI 도구들의 검수 상태를 확인할 수 있습니다.
+                        </p>
+
+                        {appsError && (
+                            <div className={s.alert}>{appsError}</div>
+                        )}
+
+                        {appsLoading ? (
+                            <div className={s.centerNotice}>
+                                신청 목록을 불러오는 중입니다...
+                            </div>
+                        ) : apps.length === 0 ? (
+                            <div className={s.centerNotice}>
+                                아직 검수 신청한 AI 도구가 없습니다.
                             </div>
                         ) : (
-                            <div className={s.likedScroller}>
-                                <div className={s.likedRow}>
-                                    {likedTools.map((tool) => (
-                                        <div
-                                            key={tool.id}
-                                            className={s.likedItem}
-                                        >
-                                            <ToolCard tool={tool} />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </section>
-
-                {/* 내가 신청한 AI 목록 */}
-                <section className={s.card}>
-                    <h2 className={s.sectionTitle}>내 AI 검수 신청</h2>
-                    <p className={s.sectionSub}>
-                        내가 등록을 요청한 AI 도구들의 검수 상태를 확인할 수 있습니다.
-                    </p>
-
-                    {appsError && (
-                        <div className={s.alert}>{appsError}</div>
-                    )}
-
-                    {appsLoading ? (
-                        <div className={s.centerNotice}>
-                            신청 목록을 불러오는 중입니다...
-                        </div>
-                    ) : apps.length === 0 ? (
-                        <div className={s.centerNotice}>
-                            아직 검수 신청한 AI 도구가 없습니다.
-                        </div>
-                    ) : (
-                        <ul className={s.appList}>
-                            {apps.map((app) => (
-                                <li key={app.id} className={s.appItem}>
-                                    <div className={s.appHeader}>
-                                        <div className={s.appTitleBox}>
-                                            <div className={s.appName}>
-                                                {app.name}
+                            <ul className={s.appList}>
+                                {apps.map((app) => (
+                                    <li key={app.id} className={s.appItem}>
+                                        <div className={s.appHeader}>
+                                            <div className={s.appTitleBox}>
+                                                <div className={s.appName}>
+                                                    {app.name}
+                                                </div>
+                                                {app.subTitle && (
+                                                    <div className={s.appSubTitle}>
+                                                        {app.subTitle}
+                                                    </div>
+                                                )}
                                             </div>
-                                            {app.subTitle && (
-                                                <div className={s.appSubTitle}>
-                                                    {app.subTitle}
+                                            <div className={s.appBadges}>
+                                                <StatusBadge status={app.status} />
+                                                {app.origin && (
+                                                    <span className={s.badge}>
+                                                        {app.origin}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className={s.appMeta}>
+                                            <span>신청일: {app.appliedAt}</span>
+                                            {app.processedAt && (
+                                                <span>
+                                                    처리일: {app.processedAt}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {app.url && (
+                                            <div className={s.appRow}>
+                                                <span className={s.appLabel}>
+                                                    URL
+                                                </span>
+                                                <a
+                                                    href={app.url}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className={s.appLink}
+                                                >
+                                                    {app.url}
+                                                </a>
+                                            </div>
+                                        )}
+
+                                        {app.status === "REJECTED" &&
+                                            app.rejectReason && (
+                                                <div className={s.appRow}>
+                                                    <span className={s.appLabel}>
+                                                        거절 사유
+                                                    </span>
+                                                    <span className={s.appValue}>
+                                                        {app.rejectReason}
+                                                    </span>
                                                 </div>
                                             )}
-                                        </div>
-                                        <div className={s.appBadges}>
-                                            <StatusBadge status={app.status} />
-                                            {app.origin && (
-                                                <span className={s.badge}>
-                                                    {app.origin}
-                                                </span>
+
+                                        {app.categories &&
+                                            app.categories.length > 0 && (
+                                                <div className={s.appRow}>
+                                                    <span className={s.appLabel}>
+                                                        카테고리
+                                                    </span>
+                                                    <span className={s.appValue}>
+                                                        {app.categories.map((c) => (
+                                                            <span
+                                                                key={c}
+                                                                className={s.badge}
+                                                            >
+                                                                {c}
+                                                            </span>
+                                                        ))}
+                                                    </span>
+                                                </div>
                                             )}
-                                        </div>
-                                    </div>
-
-                                    <div className={s.appMeta}>
-                                        <span>신청일: {app.appliedAt}</span>
-                                        {app.processedAt && (
-                                            <span>
-                                                처리일: {app.processedAt}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {app.url && (
-                                        <div className={s.appRow}>
-                                            <span className={s.appLabel}>
-                                                URL
-                                            </span>
-                                            <a
-                                                href={app.url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className={s.appLink}
-                                            >
-                                                {app.url}
-                                            </a>
-                                        </div>
-                                    )}
-
-                                    {app.status === "REJECTED" &&
-                                        app.rejectReason && (
-                                            <div className={s.appRow}>
-                                                <span className={s.appLabel}>
-                                                    거절 사유
-                                                </span>
-                                                <span className={s.appValue}>
-                                                    {app.rejectReason}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                    {app.categories &&
-                                        app.categories.length > 0 && (
-                                            <div className={s.appRow}>
-                                                <span className={s.appLabel}>
-                                                    카테고리
-                                                </span>
-                                                <span className={s.appValue}>
-                                                    {app.categories.map((c) => (
-                                                        <span
-                                                            key={c}
-                                                            className={s.badge}
-                                                        >
-                                                            {c}
-                                                        </span>
-                                                    ))}
-                                                </span>
-                                            </div>
-                                        )}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </section>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </div>
             </div>
         </div>
     );

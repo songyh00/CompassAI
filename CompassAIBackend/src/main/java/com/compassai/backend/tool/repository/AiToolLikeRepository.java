@@ -1,6 +1,9 @@
-package com.compassai.backend.tool;
+package com.compassai.backend.tool.repository;
 
 import java.util.List;
+
+import com.compassai.backend.tool.AiToolLike;
+import com.compassai.backend.tool.AiToolLikeId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AiToolLikeRepository extends JpaRepository<AiToolLike, AiToolLikeId> {

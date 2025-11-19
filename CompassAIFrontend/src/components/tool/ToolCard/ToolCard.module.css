@@ -12,7 +12,7 @@
     text-decoration: none;
     color: inherit;
     display: block;
-    width: var(--tool-card-w);
+    width: 100%;
     height: var(--tool-card-h);
 }
 .card:hover {
@@ -149,7 +149,7 @@
 /* 카드 + 팝오버 래퍼: 카드 hover 시 맨 위로 올리기 */
 .wrap {
     position: relative;
-    display: inline-block;
+    display: block;
 }
 .wrap:hover { z-index: 100; }
 

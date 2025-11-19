@@ -1,5 +1,5 @@
 // src/components/layout/Header.tsx
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import s from "./Header.module.css";
 import { me, logout } from "@/api/client";
@@ -67,7 +67,7 @@ export default function Header() {
 
     // ✅ 진짜 관리자만: role 이 ADMIN 또는 ROLE_ADMIN 일 때만 true
     const isAdmin =
-        !!user && (user.role === "ADMIN" || user.role === "ROLE_ADMIN");
+        !!user && (user.role === "ADMIN");
 
     return (
         <header className={s.header}>
@@ -85,10 +85,6 @@ export default function Header() {
                 <nav className={s.links} aria-label="유틸리티 메뉴">
                     {!user ? (
                         <>
-                            <Link to="/community">커뮤니티</Link>
-                            <span className={s.divider} aria-hidden="true">
-                                |
-                            </span>
                             <Link to="/help">고객센터</Link>
                             <span className={s.divider} aria-hidden="true">
                                 |
@@ -101,10 +97,6 @@ export default function Header() {
                         </>
                     ) : (
                         <>
-                            <Link to="/community">커뮤니티</Link>
-                            <span className={s.divider} aria-hidden="true">
-                                |
-                            </span>
                             <Link to="/help">고객센터</Link>
                             <span className={s.divider} aria-hidden="true">
                                 |
@@ -150,17 +142,16 @@ export default function Header() {
                                             AI 등록
                                         </Link>
 
-                                       {isAdmin && (
-                                           <Link
-                                               to="/admin/tools/review"
-                                               role="menuitem"
-                                               className={s.dropdownItem}
-                                               onClick={() => setOpen(false)}
-                                           >
-                                               AI 검수
-                                           </Link>
-                                       )}
-
+                                        {isAdmin && (
+                                            <Link
+                                                to="/admin/tools/review"
+                                                role="menuitem"
+                                                className={s.dropdownItem}
+                                                onClick={() => setOpen(false)}
+                                            >
+                                                AI 검수
+                                            </Link>
+                                        )}
 
                                         <div
                                             className={s.separator}
