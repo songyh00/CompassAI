@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.compassai.backend.auth.dto.ChangePasswordRequest;
+import com.compassai.backend.auth.dto.UpdateMeRequest;
 
 /**
  * 인증 관련 API를 담당하는 컨트롤러
@@ -189,5 +191,51 @@ public class AuthController {
         // SameSite 속성을 Lax로 설정한다.
         c.setAttribute("SameSite", "Lax");
         response.addCookie(c);
+    }
+    // 1) 회원정보 수정 /api/auth/me (POST)
+    @PostMapping("/me")
+    public ResponseEntity<?> updateMe(
+            @org.springframework.web.bind.annotation.RequestBody UpdateMeRequest req,
+            HttpSession session
+    ) {
+        MeResponse sessionUser = (MeResponse) session.getAttribute(SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        try {
+            MeResponse updated = authService.updateMe(
+                    sessionUser.getId(),
+                    req.getName(),
+                    req.getEmail()
+            );
+            session.setAttribute(SESSION_USER_KEY, updated);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 2) 비밀번호 변경 /api/auth/change-password
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @org.springframework.web.bind.annotation.RequestBody ChangePasswordRequest req,
+            HttpSession session
+    ) {
+        MeResponse sessionUser = (MeResponse) session.getAttribute(SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        try {
+            authService.changePassword(
+                    sessionUser.getId(),
+                    req.getCurrentPassword(),
+                    req.getNewPassword()
+            );
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.compassai.backend.auth.dto.MeResponse;
 import java.util.Locale;
 
 @Service
@@ -79,5 +79,43 @@ public class AuthService {
             return null;
         }
         return raw.trim().toLowerCase(Locale.ROOT);
+    }
+    @Transactional
+    public MeResponse updateMe(Long userId, String name, String email) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        String normalizedEmail = normalizeEmail(email);
+
+        // 이메일이 변경된 경우에만 중복 체크
+        if (!user.getEmail().equals(normalizedEmail)
+                && userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        user.setName(name);
+        user.setEmail(normalizedEmail);
+
+        User saved = userRepository.save(user);
+
+        return new MeResponse(
+                saved.getId(),
+                saved.getName(),
+                saved.getEmail(),
+                saved.getRole().name()
+        );
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

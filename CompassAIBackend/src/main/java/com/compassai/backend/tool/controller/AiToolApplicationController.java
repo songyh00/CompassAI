@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.compassai.backend.auth.dto.MeResponse;
 
 @RestController
 @RequestMapping("/api/tools/applications")
@@ -40,6 +41,15 @@ public class AiToolApplicationController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new CreateApplicationResponse(appId));
+    }
+    @GetMapping("/my-applications")
+    public ResponseEntity<?> myApplications(HttpSession session) {
+        MeResponse me = (MeResponse) session.getAttribute(SESSION_USER_KEY);
+        if (me == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        return ResponseEntity.ok(applicationService.getMyApplications(me.getId()));
     }
 
     // 간단 응답 DTO
