@@ -226,9 +226,14 @@
     padding: 4px 8px;
     border-radius: 999px;
     font-weight: 800;
+    border: 1px solid transparent;
 }
-.badgeKr { background: #10b981; color: #032318; }
-.badgeGl { background: #8b5cf6; color: #fff; }
+.badgeKr {     background: #ecfdf5;   /* 아주 연한 민트/초록 */
+    border-color: #10b981; /* 선명한 녹색 */
+    color: #065f46; }
+.badgeGl {     background: #f5f3ff;
+    border-color: #8b5cf6;
+    color: #5b21b6; }
 
 .popBody {
     margin-top: 12px;

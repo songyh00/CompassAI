@@ -14,16 +14,21 @@ type ToolPlus = Tool & {
     subTitle?: string;
 };
 
-/** ★ 팝오버 끄기 옵션 추가 */
+/** 팝오버 끄기 옵션 + 좋아요 해제 콜백 */
 type Props = {
     tool: ToolPlus;
     disablePopover?: boolean;
+    onUnlike?: (id: Tool["id"]) => void; // ★ 여기 타입 수정
 };
 
 /**
  * ToolCard 컴포넌트
  */
-export default function ToolCard({ tool, disablePopover = false }: Props) {
+export default function ToolCard({
+                                     tool,
+                                     disablePopover = false,
+                                     onUnlike,
+                                 }: Props) {
     /** 로고 이미지 후보 경로 (우선순위 순으로 시도) */
     const candidates = useMemo(() => {
         const name = tool.name.trim();
@@ -100,6 +105,11 @@ export default function ToolCard({ tool, disablePopover = false }: Props) {
                                 try {
                                     const res = await toggleToolLike(tool.id, liked);
                                     setLiked(res.liked);
+
+                                    // 좋아요 → 취소로 바뀐 경우, 상위(MyPage)에 알림
+                                    if (!res.liked && onUnlike) {
+                                        onUnlike(tool.id);
+                                    }
                                 } catch (err) {
                                     console.error(err);
                                 }
@@ -127,7 +137,7 @@ export default function ToolCard({ tool, disablePopover = false }: Props) {
                 </div>
             </a>
 
-            {/* ★ 팝오버: disablePopover 가 false일 때만 렌더 */}
+            {/* 팝오버: disablePopover 가 false일 때만 렌더 */}
             {!disablePopover && (
                 <div className={s.popover} role="dialog" aria-hidden="true">
                     <div className={s.popHead}>

@@ -7,7 +7,6 @@ import { postJSON } from "@/api/apiUtils";
 import ToolCard from "@/components/tool/ToolCard/ToolCard";
 import type { Tool } from "@/types/tool";
 
-// 사진1 레이아웃 재사용 (제목 가운데 + 고정 폭)
 import layout from "../Submit/SubmitToolPage.module.css";
 import s from "./MyPage.module.css";
 
@@ -63,17 +62,17 @@ export default function MyPage() {
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPwd, setSavingPwd] = useState(false);
 
-    // 내가 신청한 AI 목록
     const [apps, setApps] = useState<MyToolApplication[]>([]);
     const [appsLoading, setAppsLoading] = useState(false);
     const [appsError, setAppsError] = useState<string | null>(null);
 
-    // 내가 좋아요한 AI 목록
     const [likedTools, setLikedTools] = useState<Tool[]>([]);
     const [likedLoading, setLikedLoading] = useState(false);
     const [likedError, setLikedError] = useState<string | null>(null);
 
-    // 현재 로그인 유저 불러오기
+    // 열려 있는 신청 카드 id
+    const [openAppId, setOpenAppId] = useState<number | null>(null);
+
     useEffect(() => {
         const load = async () => {
             try {
@@ -94,7 +93,6 @@ export default function MyPage() {
         load();
     }, []);
 
-    // 내가 신청한 AI 목록 불러오기
     useEffect(() => {
         const fetchApps = async () => {
             setAppsLoading(true);
@@ -122,7 +120,6 @@ export default function MyPage() {
         fetchApps();
     }, []);
 
-    // 내가 좋아요한 AI 목록 불러오기
     useEffect(() => {
         const fetchLiked = async () => {
             setLikedLoading(true);
@@ -150,7 +147,23 @@ export default function MyPage() {
         fetchLiked();
     }, []);
 
-    // 로딩 상태
+    // 좋아요 영역에서 세로 휠을 가로 스크롤로 변환 + 페이지 스크롤 방지
+    const handleLikedWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        const el = e.currentTarget;
+
+        // 수평 스크롤 여유가 없으면 기본 동작 유지
+        if (el.scrollWidth <= el.clientWidth) return;
+
+        // 세로 휠 입력을 가로 스크롤로 사용
+        if (Math.abs(e.deltaY) >= Math.abs(e.deltaX)) {
+            el.scrollLeft += e.deltaY;
+
+            // 페이지로 이벤트 올라가는 것 막기
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
     if (profileLoading) {
         return (
             <div className={layout["submit-wrap"]}>
@@ -164,7 +177,6 @@ export default function MyPage() {
         );
     }
 
-    // 비로그인 상태
     if (!user) {
         return (
             <div className={layout["submit-wrap"]}>
@@ -180,7 +192,6 @@ export default function MyPage() {
         );
     }
 
-    // 회원정보 수정 검증
     const validateProfile = () => {
         const next: ProfileErrors = {};
         if (!name.trim()) next.name = "이름을 입력해 주세요.";
@@ -191,7 +202,6 @@ export default function MyPage() {
         return Object.keys(next).length === 0;
     };
 
-    // 회원정보 저장
     const onSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateProfile()) return;
@@ -200,7 +210,6 @@ export default function MyPage() {
         setProfileErr({});
         setProfileOk("");
         try {
-            // TS18046 해결: postJSON 반환 타입 지정
             const updated = await postJSON<{
                 name?: string;
                 email?: string;
@@ -228,7 +237,6 @@ export default function MyPage() {
         }
     };
 
-    // 비밀번호 변경 검증
     const validatePassword = () => {
         const next: PasswordErrors = {};
         if (!currentPassword)
@@ -244,7 +252,6 @@ export default function MyPage() {
         return Object.keys(next).length === 0;
     };
 
-    // 비밀번호 변경
     const onChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validatePassword()) return;
@@ -276,12 +283,10 @@ export default function MyPage() {
         <div className={layout["submit-wrap"]}>
             <div className={layout["submit-container"]}>
                 <header className={layout["submit-header"]}>
-                    {/* 사진1처럼 가운데 검정 글씨 제목 */}
                     <h1 className={layout["submit-title"]}>마이페이지</h1>
                 </header>
 
                 <div className={s.inner}>
-                    {/* 회원정보 수정 */}
                     <section className={s.card}>
                         <h1 className={s.title}>내 정보 수정</h1>
                         <p className={s.sub}>
@@ -339,7 +344,6 @@ export default function MyPage() {
                         </form>
                     </section>
 
-                    {/* 비밀번호 변경 */}
                     <section className={s.card}>
                         <h2 className={s.sectionTitle}>비밀번호 변경</h2>
                         <form
@@ -419,7 +423,6 @@ export default function MyPage() {
                         </form>
                     </section>
 
-                    {/* 내가 좋아요한 AI 목록 */}
                     <section className={s.card}>
                         <h2 className={s.sectionTitle}>내가 좋아요한 AI 서비스</h2>
                         <p className={s.sectionSub}>
@@ -438,12 +441,20 @@ export default function MyPage() {
                                     아직 좋아요한 AI 도구가 없습니다.
                                 </div>
                             ) : (
-                                <div className={s.likedScroller}>
+                                <div
+                                    className={s.likedScroller}
+                                    onWheel={handleLikedWheel}
+                                >
                                     <div className={s.likedRow}>
                                         {likedTools.map((tool) => (
                                             <div key={tool.id} className={s.likedItem}>
-                                                {/* ★ 팝오버 끔 */}
-                                                <ToolCard tool={tool} disablePopover />
+                                                <ToolCard
+                                                    tool={tool}
+                                                    disablePopover
+                                                    onUnlike={(id) => {
+                                                        setLikedTools((prev) => prev.filter((t) => t.id !== id));
+                                                    }}
+                                                />
                                             </div>
                                         ))}
                                     </div>
@@ -452,109 +463,179 @@ export default function MyPage() {
                         </div>
                     </section>
 
-                    {/* 내가 신청한 AI 목록 */}
                     <section className={s.card}>
                         <h2 className={s.sectionTitle}>내가 신청한 AI 서비스</h2>
                         <p className={s.sectionSub}>
                             내가 등록을 요청한 AI 도구들의 검수 상태를 확인할 수 있습니다.
                         </p>
 
-                        {appsError && (
-                            <div className={s.alert}>{appsError}</div>
-                        )}
+                        <div className={s.appArea}>
+                            {appsError && (
+                                <div className={s.alert}>{appsError}</div>
+                            )}
 
-                        {appsLoading ? (
-                            <div className={s.centerNotice}>
-                                신청 목록을 불러오는 중입니다...
-                            </div>
-                        ) : apps.length === 0 ? (
-                            <div className={s.centerNotice}>
-                                아직 검수 신청한 AI 도구가 없습니다.
-                            </div>
-                        ) : (
-                            <ul className={s.appList}>
-                                {apps.map((app) => (
-                                    <li key={app.id} className={s.appItem}>
-                                        <div className={s.appHeader}>
-                                            <div className={s.appTitleBox}>
-                                                <div className={s.appName}>
-                                                    {app.name}
-                                                </div>
-                                                {app.subTitle && (
-                                                    <div className={s.appSubTitle}>
-                                                        {app.subTitle}
+                            {appsLoading ? (
+                                <div className={s.centerNotice}>
+                                    신청 목록을 불러오는 중입니다...
+                                </div>
+                            ) : apps.length === 0 ? (
+                                <div className={s.appEmpty}>
+                                    아직 검수 신청한 AI 도구가 없습니다.
+                                </div>
+                            ) : (
+                                <ul className={s.appList}>
+                                    {apps.map((app) => {
+                                        const open = openAppId === app.id;
+                                        return (
+                                            <li
+                                                key={app.id}
+                                                className={`${s.appItem} ${
+                                                    open ? s.appItemOpen : ""
+                                                }`}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className={`${s.appRowBtn} ${
+                                                        open ? s.appRowBtnOpen : ""
+                                                    }`}
+                                                    onClick={() =>
+                                                        setOpenAppId(open ? null : app.id)
+                                                    }
+                                                    aria-expanded={open}
+                                                >
+                                                    <div>
+                                                        <div className={s.appName}>
+                                                            {app.name}
+                                                        </div>
+                                                        {app.subTitle && (
+                                                            <div className={s.appSubTitle}>
+                                                                {app.subTitle}
+                                                            </div>
+                                                        )}
+
+                                                        <div className={s.appMeta}>
+                                                            <StatusBadge status={app.status} />
+
+                                                            {app.origin && (
+                                                                <span
+                                                                    className={
+                                                                        app.origin === "국내"
+                                                                            ? `${s.badge} ${s.badgeKr}`
+                                                                            : app.origin ===
+                                                                            "해외"
+                                                                                ? `${s.badge} ${s.badgeGl}`
+                                                                                : s.badge
+                                                                    }
+                                                                >
+                                                                    {app.origin}
+                                                                </span>
+                                                            )}
+
+                                                            <span className={s.badge}>
+                                                                신청일: {app.appliedAt}
+                                                            </span>
+                                                            {app.processedAt && (
+                                                                <span className={s.badge}>
+                                                                    처리일: {app.processedAt}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={s.appRowRight}>
+                                                        <span
+                                                            style={{
+                                                                fontSize: 12,
+                                                                color: "#6b7280",
+                                                            }}
+                                                        >
+                                                            {open ? "접기" : "자세히"}
+                                                        </span>
+                                                        <i className={s.appToggleIcon}>
+                                                            {open ? "–" : "+"}
+                                                        </i>
+                                                    </div>
+                                                </button>
+
+                                                {open && (
+                                                    <div className={s.appBody}>
+                                                        {app.url && (
+                                                            <div className={s.appRow}>
+                                                                <span
+                                                                    className={s.appLabel}
+                                                                >
+                                                                    URL
+                                                                </span>
+                                                                <a
+                                                                    href={app.url}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className={s.appLink}
+                                                                >
+                                                                    {app.url}
+                                                                </a>
+                                                            </div>
+                                                        )}
+
+                                                        {app.categories &&
+                                                            app.categories.length >
+                                                            0 && (
+                                                                <div className={s.appRow}>
+                                                                    <span
+                                                                        className={
+                                                                            s.appLabel
+                                                                        }
+                                                                    >
+                                                                        카테고리
+                                                                    </span>
+                                                                    <span
+                                                                        className={
+                                                                            s.appValue
+                                                                        }
+                                                                    >
+                                                                        {app.categories.map(
+                                                                            (c) => (
+                                                                                <span
+                                                                                    key={c}
+                                                                                    className={
+                                                                                        s.badge
+                                                                                    }
+                                                                                >
+                                                                                    {c}
+                                                                                </span>
+                                                                            )
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+
+                                                        {app.status === "REJECTED" &&
+                                                            app.rejectReason && (
+                                                                <div className={s.appRow}>
+                                                                    <span
+                                                                        className={s.appLabel}
+                                                                    >
+                                                                        거절 사유
+                                                                    </span>
+                                                                    <span
+                                                                        className={
+                                                                            s.appValue
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            app.rejectReason
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                     </div>
                                                 )}
-                                            </div>
-                                            <div className={s.appBadges}>
-                                                <StatusBadge status={app.status} />
-                                                {app.origin && (
-                                                    <span className={s.badge}>
-                                                        {app.origin}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className={s.appMeta}>
-                                            <span>신청일: {app.appliedAt}</span>
-                                            {app.processedAt && (
-                                                <span>
-                                                    처리일: {app.processedAt}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {app.url && (
-                                            <div className={s.appRow}>
-                                                <span className={s.appLabel}>
-                                                    URL
-                                                </span>
-                                                <a
-                                                    href={app.url}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className={s.appLink}
-                                                >
-                                                    {app.url}
-                                                </a>
-                                            </div>
-                                        )}
-
-                                        {app.status === "REJECTED" &&
-                                            app.rejectReason && (
-                                                <div className={s.appRow}>
-                                                    <span className={s.appLabel}>
-                                                        거절 사유
-                                                    </span>
-                                                    <span className={s.appValue}>
-                                                        {app.rejectReason}
-                                                    </span>
-                                                </div>
-                                            )}
-
-                                        {app.categories &&
-                                            app.categories.length > 0 && (
-                                                <div className={s.appRow}>
-                                                    <span className={s.appLabel}>
-                                                        카테고리
-                                                    </span>
-                                                    <span className={s.appValue}>
-                                                        {app.categories.map((c) => (
-                                                            <span
-                                                                key={c}
-                                                                className={s.badge}
-                                                            >
-                                                                {c}
-                                                            </span>
-                                                        ))}
-                                                    </span>
-                                                </div>
-                                            )}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </div>
                     </section>
                 </div>
             </div>
@@ -569,10 +650,10 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
         label = "대기";
         cls = s.statusPending;
     } else if (status === "APPROVED") {
-        label = "승인됨";
+        label = "승인";
         cls = s.statusApproved;
     } else {
-        label = "거절됨";
+        label = "거절";
         cls = s.statusRejected;
     }
     return <span className={`${s.badge} ${cls}`}>{label}</span>;

@@ -1,3 +1,5 @@
+/* src/pages/Mypage/MyPage.module.css */
+
 .wrap {
     max-width: 980px;
     margin: 0 auto;
@@ -143,13 +145,13 @@
 }
 
 .secondaryBtn {
-    background: #fff;
-    color: #111;
+    background: #111;
+    color: #fff;
 }
 
 .secondaryBtn:hover:not(:disabled) {
-    background: #111;
-    color: #fff;
+    background: #fff;
+    color: #111;
     box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
 }
 
@@ -166,12 +168,22 @@
     padding: 16px 0;
 }
 
-/* 내 AI 신청 리스트 */
+/* ===============================
+   내가 신청한 AI 서비스 영역
+   =============================== */
+
+.appArea {
+    margin-top: 10px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
 
 .appList {
     list-style: none;
     padding: 0;
-    margin: 10px 0 0;
+    margin: 0 0 0;
     display: grid;
     gap: 8px;
 }
@@ -179,20 +191,51 @@
 .appItem {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 12px 12px 10px;
-    background: #f9fafb;
+    background: #fff;
 }
 
-.appHeader {
+.appItemOpen {
+    background: #f1f5f9;
+    border-color: #dbe1e6;
+}
+
+/* 헤더 버튼 (접기/펼치기) */
+.appRowBtn {
+    width: 100%;
+    padding: 12px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    align-items: flex-start;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-weight: 700;
+    color: #111;
+    border-radius: 12px;
+    transition: background .15s;
 }
 
-.appTitleBox {
-    min-width: 0;
+.appRowBtn:hover {
+    background: #f8f9fb;
 }
+
+.appRowBtnOpen {
+    background: #f1f5f9;
+}
+
+.appRowRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.appToggleIcon {
+    font-style: normal;
+    color: #888;
+    padding-left: 8px;
+}
+
+/* 타이틀/메타 */
 
 .appName {
     font-size: 15px;
@@ -208,12 +251,16 @@
     word-break: break-all;
 }
 
-.appBadges {
+.appMeta {
+    margin-top: 6px;
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    justify-content: flex-end;
+    gap: 6px 10px;
+    font-size: 12px;
+    color: #6b7280;
 }
+
+/* 공통 배지 */
 
 .badge {
     display: inline-flex;
@@ -226,6 +273,8 @@
     color: #374151;
 }
 
+/* 상태 배지 */
+
 .statusPending {
     background: #fefce8;
     border-color: #facc15;
@@ -233,9 +282,9 @@
 }
 
 .statusApproved {
-    background: #ecfdf5;
-    border-color: #34d399;
-    color: #166534;
+    background: #eff6ff;
+    border-color: #60a5fa;
+    color: #1d4ed8;
 }
 
 .statusRejected {
@@ -244,17 +293,33 @@
     color: #991b1b;
 }
 
-.appMeta {
-    margin-top: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 10px;
-    font-size: 12px;
-    color: #6b7280;
+/* 국내 / 해외 배지 */
+
+.badgeKr {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.badgeGl {
+    background: #f5f3ff;
+    border-color: #8b5cf6;
+    color: #5b21b6;
+}
+
+/* 펼쳐진 본문 */
+
+.appBody {
+    padding: 12px 14px 14px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 12px 12px;
+    display: grid;
+    gap: 8px;
 }
 
 .appRow {
-    margin-top: 6px;
+    margin-top: 2px;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
@@ -282,20 +347,21 @@
     text-decoration: underline;
 }
 
-@media (max-width: 720px) {
-    .card {
-        padding: 20px 16px;
-    }
-    .title {
-        font-size: 24px;
-    }
+.appEmpty {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    color: #9ca3af;
+    padding: 8px 4px;
 }
 
-/* ===========================
-   좋아요한 AI 카드 영역
-   =========================== */
+/* ===============================
+   내가 좋아요한 AI 카드 영역
+   =============================== */
 
-/* 좋아요 영역 전체 박스 */
 .likedArea {
     margin-top: 10px;
     padding: 12px 8px 16px;
@@ -305,7 +371,6 @@
     max-width: 100%;
 }
 
-/* 좋아요가 없거나 로딩 중일 때 */
 .likedEmpty {
     min-height: 160px;
     border-radius: 12px;
@@ -320,45 +385,56 @@
     color: #9ca3af;
 }
 
-/* 가로 스크롤 영역 */
+/* 가로 스크롤 */
+
 .likedScroller {
     margin-top: 4px;
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 4px;
     max-width: 100%;
+    overscroll-behavior-x: contain; /* 추가 */
+    overscroll-behavior-y: contain; /* 추가 */
 }
 
-/* 스크롤바 커스터마이즈 */
 .likedScroller::-webkit-scrollbar {
     height: 6px;
 }
+
 .likedScroller::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .likedScroller::-webkit-scrollbar-thumb {
     background: rgba(148, 163, 184, 0.8);
     border-radius: 999px;
 }
 
-/* 카드가 들어가는 줄 – flex 전용 */
 .likedRow {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;       /* 줄바꿈 없이 가로로만 배치 */
+    flex-wrap: nowrap;
     align-items: stretch;
-    gap: 16px;               /* 카드 사이 여백 */
+    gap: 16px;
     padding: 0 4px;
 }
 
-/* 개별 ToolCard 래퍼 – 폭 고정, 줄어들지 않게 */
 .likedItem {
-    flex: 0 0 auto;          /* 줄어들지 않게 */
-    width: 280px;            /* 카드 고정 너비 */
+    flex: 0 0 auto;
+    width: 280px;
+}
+
+@media (max-width: 720px) {
+    .card {
+        padding: 20px 16px;
+    }
+    .title {
+        font-size: 24px;
+    }
 }
 
 @media (max-width: 640px) {
     .likedItem {
-        width: 240px;        /* 모바일에서 조금 좁게 */
+        width: 240px;
     }
 }
